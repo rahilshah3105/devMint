@@ -1,0 +1,21 @@
+export const LANGUAGES = [
+  { id: 'javascript', name: 'JavaScript' },
+  { id: 'typescript', name: 'TypeScript' },
+  { id: 'python', name: 'Python' },
+  { id: 'java', name: 'Java' },
+  { id: 'cpp', name: 'C++' },
+  { id: 'c', name: 'C' },
+  { id: 'csharp', name: 'C#' },
+  { id: 'go', name: 'Go' },
+  { id: 'rust', name: 'Rust' },
+  { id: 'php', name: 'PHP' },
+  { id: 'ruby', name: 'Ruby' },
+  { id: 'sql', name: 'SQL' },
+  { id: 'html', name: 'HTML' },
+  { id: 'css', name: 'CSS' },
+  { id: 'json', name: 'JSON' },
+  { id: 'yaml', name: 'YAML' },
+  { id: 'markdown', name: 'Markdown' },
+  { id: 'xml', name: 'XML' },
+  { id: 'shell', name: 'Shell Script' }
+];
