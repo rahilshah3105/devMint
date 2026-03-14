@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import ResourceLinks from '../components/ResourceLinks';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import { ArrowLeftRight } from 'lucide-react';
 import './ToolPage.css';
 
 export default function UrlConverter() {
-  const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
-  const [mode, setMode] = useState('encode');
+  const [input, setInput] = useLocalStorage('url_input', '');
+  const [output, setOutput] = useLocalStorage('url_output', '');
+  const [mode, setMode] = useLocalStorage('url_mode', 'encode');
 
   const processConvert = (val, currentMode) => {
     setInput(val);

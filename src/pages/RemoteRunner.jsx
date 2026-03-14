@@ -35,10 +35,25 @@ const DEFAULT_CODE = {
   ruby: 'puts "Hello from Ruby!"'
 };
 
+const STORAGE_KEY = 'devtoolkit_runner_lang';
+
 export default function RemoteRunner() {
   const { theme } = useTheme();
-  const [language, setLanguage] = useState(LANGUAGES[0]);
-  const [code, setCode] = useState(DEFAULT_CODE[LANGUAGES[0].id]);
+
+  // Restore last selected language from localStorage
+  const getInitialLang = () => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const found = LANGUAGES.find(l => l.id === saved);
+        if (found) return found;
+      }
+    } catch { /* ignore */ }
+    return LANGUAGES[0];
+  };
+
+  const [language, setLanguage] = useState(getInitialLang);
+  const [code, setCode] = useState(() => DEFAULT_CODE[getInitialLang().id]);
   const [output, setOutput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -52,6 +67,7 @@ export default function RemoteRunner() {
     setCode(DEFAULT_CODE[langId] || '');
     setOutput('');
     setErrorMsg('');
+    try { localStorage.setItem(STORAGE_KEY, langId); } catch { /* ignore */ }
   };
 
   const handleEditorDidMount = (editor) => {

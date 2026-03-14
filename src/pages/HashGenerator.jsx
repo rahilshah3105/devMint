@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import ResourceLinks from '../components/ResourceLinks';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import './ToolPage.css';
 
 export default function HashGenerator() {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useLocalStorage('hash_input', '');
   const [hashes, setHashes] = useState({
     sha1: '',
     sha256: '',

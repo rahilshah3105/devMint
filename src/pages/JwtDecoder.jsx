@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import ResourceLinks from '../components/ResourceLinks';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import './ToolPage.css';
 
 export default function JwtDecoder() {
-  const [token, setToken] = useState('');
+  const [token, setToken] = useLocalStorage('jwt_token', '');
   const [header, setHeader] = useState('');
   const [payload, setPayload] = useState('');
   const [error, setError] = useState('');

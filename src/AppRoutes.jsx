@@ -24,6 +24,13 @@ import LoremIpsum from './pages/LoremIpsum';
 import TimestampConverter from './pages/TimestampConverter';
 import DeveloperApps from './pages/DeveloperApps';
 
+import UtilityTools from './pages/UtilityTools';
+import JsonSnippets from './pages/JsonSnippets';
+import NumberBaseConverter from './pages/NumberBaseConverter';
+import CronExplainer from './pages/CronExplainer';
+import StringUtils from './pages/StringUtils';
+import JsonCompare from './pages/JsonCompare';
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -53,6 +60,12 @@ export default function AppRoutes() {
         <Route path="uuid" element={<UuidGenerator />} />
         <Route path="lorem" element={<LoremIpsum />} />
         <Route path="timestamp" element={<TimestampConverter />} />
+        <Route path="utility-tools" element={<UtilityTools />} />
+        <Route path="json-snippets" element={<JsonSnippets />} />
+        <Route path="base-converter" element={<NumberBaseConverter />} />
+        <Route path="cron" element={<CronExplainer />} />
+        <Route path="string-utils" element={<StringUtils />} />
+        <Route path="json-compare" element={<JsonCompare />} />
         
         {/* Ecosystem */}
         <Route path="apps" element={<DeveloperApps />} />

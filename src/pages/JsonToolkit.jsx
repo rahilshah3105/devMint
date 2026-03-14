@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import ResourceLinks from '../components/ResourceLinks';
 import './ToolPage.css';
 
 export default function JsonToolkit() {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useLocalStorage('json_toolkit_input', '');
   const [output, setOutput] = useState('');
   const [status, setStatus] = useState({ type: '', message: '' });
 

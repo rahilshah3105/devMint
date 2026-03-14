@@ -10,32 +10,32 @@ export default function Layout() {
   // Auto-collapse sidebar on smaller screens
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
+      if (window.innerWidth < 769) {
         setSidebarOpen(false);
       } else {
         setSidebarOpen(true);
       }
     };
     
-    // Initial check
     handleResize();
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
     <div className="app-layout">
-      {/* Mobile overlay */}
+      {/* Mobile overlay — only on small screens when sidebar is open */}
       {sidebarOpen && <div className="mobile-overlay md:hidden" onClick={() => setSidebarOpen(false)}></div>}
       
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       
       <main className="main-content">
+        {/* Mobile-only hamburger — only shows when sidebar is CLOSED on mobile */}
         {!sidebarOpen && (
           <button 
-            className="sidebar-toggle-btn"
+            className="sidebar-toggle-btn md:hidden"
             onClick={() => setSidebarOpen(true)}
+            title="Open sidebar"
           >
             <Menu size={20} />
           </button>

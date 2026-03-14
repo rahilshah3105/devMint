@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Copy, Check, X, BookOpen } from 'lucide-react';
 import ResourceLinks from '../components/ResourceLinks';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import './ToolPage.css';
 import './RegexTester.css';
 
@@ -131,9 +132,9 @@ function explainRegex(pattern, flags, matchCount) {
 }
 
 export default function RegexTester() {
-  const [pattern, setPattern] = useState('[A-Z]\\w+');
-  const [flags, setFlags] = useState('g');
-  const [testString, setTestString] = useState('Hello World, this is a Test String 123. Email: dev@example.com, Color: #3b82f6');
+  const [pattern, setPattern] = useLocalStorage('regex_pattern', '[A-Z]\\w+');
+  const [flags, setFlags] = useLocalStorage('regex_flags', 'g');
+  const [testString, setTestString] = useLocalStorage('regex_teststring', 'Hello World, this is a Test String 123. Email: dev@example.com, Color: #3b82f6');
   const [showExplanation, setShowExplanation] = useState(false);
 
   const matches = useMemo(() => {
