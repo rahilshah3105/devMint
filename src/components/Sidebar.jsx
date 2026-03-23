@@ -24,6 +24,7 @@ import {
   Timer,
   Database,
   Menu,
+  Search,
   ChevronsLeft,
   ChevronsRight
 } from 'lucide-react';
@@ -85,7 +86,7 @@ const navGroups = [
   }
 ];
 
-export default function Sidebar({ isOpen, setIsOpen }) {
+export default function Sidebar({ isOpen, setIsOpen, onOpenSearch }) {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -121,6 +122,14 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       </div>
       
       <nav className="sidebar-nav custom-scrollbar">
+        <div className="search-trigger-wrap">
+          <button className="nav-link search-trigger-btn" onClick={onOpenSearch} title="Search features (Ctrl/Cmd + K)">
+            <span className="nav-icon"><Search size={18} /></span>
+            <span className="nav-name">Search</span>
+            <span className="search-trigger-kbd">Ctrl/Cmd + K</span>
+          </button>
+        </div>
+
         {navGroups.map((group, idx) => (
           <div key={idx} className="nav-group">
             <h3 className="nav-group-title">{group.title}</h3>

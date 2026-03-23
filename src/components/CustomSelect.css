@@ -87,6 +87,11 @@
   color: var(--text-primary);
 }
 
+.custom-select-option.highlighted {
+  background-color: rgba(128, 128, 128, 0.14);
+  color: var(--text-primary);
+}
+
 .custom-select-option.selected {
   background-color: rgba(128, 128, 128, 0.05);
   color: var(--accent-primary);
