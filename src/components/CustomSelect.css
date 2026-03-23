@@ -4,6 +4,10 @@
   min-width: 140px;
 }
 
+.custom-select-container.full-width {
+  width: 100% !important;
+}
+
 @media (min-width: 768px) {
   .custom-select-container {
     width: auto;

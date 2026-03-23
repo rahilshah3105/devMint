@@ -30,6 +30,15 @@ import NumberBaseConverter from './pages/NumberBaseConverter';
 import CronExplainer from './pages/CronExplainer';
 import StringUtils from './pages/StringUtils';
 import JsonCompare from './pages/JsonCompare';
+import ImprovePrompts from './pages/ImprovePrompts';
+import ApiTestCaseGenerator from './pages/ApiTestCaseGenerator';
+import MockDataGenerator from './pages/MockDataGenerator';
+import JsonSchemaValidator from './pages/JsonSchemaValidator';
+import HttpRequestBuilder from './pages/HttpRequestBuilder';
+import UnitTestScaffold from './pages/UnitTestScaffold';
+import E2EScenarioBuilder from './pages/E2EScenarioBuilder';
+import LogAnalyzer from './pages/LogAnalyzer';
+import GitPrHelper from './pages/GitPrHelper';
 
 export default function AppRoutes() {
   return (
@@ -66,6 +75,15 @@ export default function AppRoutes() {
         <Route path="cron" element={<CronExplainer />} />
         <Route path="string-utils" element={<StringUtils />} />
         <Route path="json-compare" element={<JsonCompare />} />
+        <Route path="improve-prompts" element={<ImprovePrompts />} />
+        <Route path="api-test-cases" element={<ApiTestCaseGenerator />} />
+        <Route path="mock-data" element={<MockDataGenerator />} />
+        <Route path="json-schema-validator" element={<JsonSchemaValidator />} />
+        <Route path="http-request-builder" element={<HttpRequestBuilder />} />
+        <Route path="unit-test-scaffold" element={<UnitTestScaffold />} />
+        <Route path="e2e-scenario-builder" element={<E2EScenarioBuilder />} />
+        <Route path="log-analyzer" element={<LogAnalyzer />} />
+        <Route path="git-pr-helper" element={<GitPrHelper />} />
         
         {/* Ecosystem */}
         <Route path="apps" element={<DeveloperApps />} />
