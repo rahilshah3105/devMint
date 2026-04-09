@@ -47,25 +47,31 @@ function buildImprovedPrompt({
   const parsedConstraints = normalizeList(constraints);
   const parsedContext = normalizeList(context);
 
-  const lines = [
-    'You are an expert assistant.',
-    goal ? `Primary goal: ${goal}.` : 'Primary goal: Solve the user request accurately and efficiently.',
-    audience ? `Audience: ${audience}.` : null,
-    `Tone: ${tone}.`,
-    `Output format: ${format}.`,
-    parsedContext.length ? 'Context to use:' : null,
-    ...parsedContext.map(item => `- ${item}`),
-    parsedConstraints.length ? 'Constraints:' : null,
-    ...parsedConstraints.map(item => `- ${item}`),
-    includeExamples ? 'Include one short concrete example when useful.' : null,
-    askClarifyingQuestions
-      ? 'If the request is ambiguous, ask 1-3 precise clarifying questions before solving.'
-      : 'If assumptions are required, state them briefly and continue.',
-    'User request:',
-    userPrompt || '[Add your raw prompt here]'
-  ].filter(Boolean);
-
-  return lines.join('\n');
+  // Synthesize a clear, actionable prompt
+  let improved = '';
+  improved += `You are an expert assistant writing for ${audience || 'a general audience'}.\n`;
+  if (goal) {
+    improved += `Your main goal: ${goal}\n`;
+  }
+  if (parsedContext.length) {
+    improved += `Context: ${parsedContext.join('; ')}\n`;
+  }
+  if (parsedConstraints.length) {
+    improved += `Please follow these constraints: ${parsedConstraints.join('; ')}\n`;
+  }
+  improved += `Use a ${tone.toLowerCase()} tone and present the output in ${format} format.\n`;
+  if (askClarifyingQuestions) {
+    improved += `If anything is unclear, ask up to 3 clarifying questions before answering.\n`;
+  } else {
+    improved += `If you need to make assumptions, state them briefly and proceed.\n`;
+  }
+  if (includeExamples) {
+    improved += `Include a short, concrete example if it helps illustrate the answer.\n`;
+  }
+  improved += '\nRewrite and improve the following user request for clarity and completeness:';
+  improved += `\n---\n${userPrompt || '[Add your raw prompt here]'}\n---`;
+  improved += '\n\nReturn a single, well-structured prompt that incorporates all the above.';
+  return improved;
 }
 
 export default function ImprovePrompts() {

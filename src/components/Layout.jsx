@@ -10,7 +10,12 @@ const FEATURE_SEARCH_ITEMS = [
   { name: 'Diff Checker', path: '/diff', group: 'Editors & Formatters' },
   { name: 'Code Shrinker', path: '/shrinker', group: 'Editors & Formatters' },
   { name: 'JSON to Types', path: '/json-types', group: 'Converters & Encoders' },
-  { name: 'JSON Toolkit', path: '/json-toolkit', group: 'Converters & Encoders' },
+  {
+    name: 'JSON Toolkit',
+    path: '/json-toolkit',
+    group: 'Converters & Encoders',
+    keywords: ['json search', 'json find', 'find in json', 'search in json', 'json text search']
+  },
   { name: 'JSON Compare', path: '/json-compare', group: 'Converters & Encoders' },
   { name: 'Utility Tools', path: '/utility-tools', group: 'Converters & Encoders' },
   { name: 'Base64 Converter', path: '/base64', group: 'Converters & Encoders' },
@@ -39,6 +44,66 @@ const FEATURE_SEARCH_ITEMS = [
   { name: 'Developer Apps', path: '/apps', group: 'Ecosystem' },
 ];
 
+function normalizeText(value) {
+  return (value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function fuzzyScore(query, target) {
+  if (!query) return 1;
+
+  const normalizedQuery = normalizeText(query);
+  const normalizedTarget = normalizeText(target);
+
+  if (!normalizedQuery) return 1;
+  if (!normalizedTarget) return -1;
+  if (normalizedTarget.includes(normalizedQuery)) {
+    return 1000 - (normalizedTarget.indexOf(normalizedQuery) * 2);
+  }
+
+  let score = 0;
+  let queryIndex = 0;
+  let streak = 0;
+
+  for (let i = 0; i < normalizedTarget.length && queryIndex < normalizedQuery.length; i += 1) {
+    if (normalizedTarget[i] === normalizedQuery[queryIndex]) {
+      queryIndex += 1;
+      streak += 1;
+      score += 8 + streak * 2;
+    } else {
+      streak = 0;
+      score -= 1;
+    }
+  }
+
+  if (queryIndex !== normalizedQuery.length) return -1;
+
+  score -= Math.max(0, normalizedTarget.length - normalizedQuery.length);
+  return score;
+}
+
+function tokenMatchScore(query, target) {
+  const queryTokens = (query || '')
+    .toLowerCase()
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .filter((token) => token.length >= 3);
+
+  if (!queryTokens.length) return -1;
+
+  const rawTarget = (target || '').toLowerCase();
+  const normalizedTarget = normalizeText(target);
+  const matchedTokens = queryTokens.filter((token) => {
+    const normalizedToken = normalizeText(token);
+    return rawTarget.includes(token) || normalizedTarget.includes(normalizedToken);
+  });
+
+  if (!matchedTokens.length) return -1;
+  if (matchedTokens.length !== queryTokens.length) return -1;
+
+  return 600 + matchedTokens.length * 70;
+}
+
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,7 +116,17 @@ export default function Layout() {
   const filteredFeatures = useMemo(() => {
     const query = searchText.trim().toLowerCase();
     if (!query) return FEATURE_SEARCH_ITEMS;
-    return FEATURE_SEARCH_ITEMS.filter(item => `${item.name} ${item.group}`.toLowerCase().includes(query));
+
+    return FEATURE_SEARCH_ITEMS
+      .map((item) => {
+        const keywordsLabel = (item.keywords || []).join(' ');
+        const label = `${item.name} ${item.group} ${keywordsLabel}`;
+        const score = Math.max(fuzzyScore(query, label), tokenMatchScore(query, label));
+        return { item, score };
+      })
+      .filter((entry) => entry.score >= 0)
+      .sort((a, b) => b.score - a.score)
+      .map((entry) => entry.item);
   }, [searchText]);
 
   const closeSearch = () => {

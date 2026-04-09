@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DiffEditor } from '@monaco-editor/react';
+import { Editor, DiffEditor } from '@monaco-editor/react';
 import ResourceLinks from '../components/ResourceLinks';
 import CustomSelect from '../components/CustomSelect';
 import { LANGUAGES } from '../utils/constants';
@@ -33,23 +33,68 @@ export default function DiffChecker() {
         </div>
       </header>
 
-      <div className="flex-1 glass-panel rounded-xl overflow-hidden min-h-[400px]">
-        <DiffEditor
-          height="100%"
-          language={language}
-          theme={theme === 'dark' ? 'vs-dark' : 'light'}
-          original={originalCode}
-          modified={modifiedCode}
-          options={{
-            renderSideBySide: true,
-            minimap: { enabled: false },
-            fontSize: 14,
-            fontFamily: 'var(--font-mono)',
-            padding: { top: 16 },
-            scrollBeyondLastLine: false,
-            fixedOverflowWidgets: true,
-          }}
-        />
+
+      <div className="flex-1 glass-panel rounded-xl overflow-hidden min-h-[400px] flex flex-col">
+        <div className="flex flex-1 min-h-[300px] gap-2">
+          <div className="flex-1 flex flex-col">
+            <div className="text-xs font-semibold text-[var(--text-secondary)] mb-1 pl-1">Original</div>
+            <Editor
+              height="100%"
+              defaultLanguage={language}
+              language={language}
+              theme={theme === 'dark' ? 'vs-dark' : 'light'}
+              value={originalCode}
+              onChange={v => setOriginalCode(v ?? '')}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                fontFamily: 'var(--font-mono)',
+                padding: { top: 16 },
+                scrollBeyondLastLine: false,
+                fixedOverflowWidgets: true,
+              }}
+            />
+          </div>
+          <div className="flex-1 flex flex-col">
+            <div className="text-xs font-semibold text-[var(--text-secondary)] mb-1 pl-1">Modified</div>
+            <Editor
+              height="100%"
+              defaultLanguage={language}
+              language={language}
+              theme={theme === 'dark' ? 'vs-dark' : 'light'}
+              value={modifiedCode}
+              onChange={v => setModifiedCode(v ?? '')}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                fontFamily: 'var(--font-mono)',
+                padding: { top: 16 },
+                scrollBeyondLastLine: false,
+                fixedOverflowWidgets: true,
+              }}
+            />
+          </div>
+        </div>
+        <div className="mt-6 border-t pt-4">
+          <div className="text-xs font-semibold text-[var(--text-secondary)] mb-2 pl-1">Visual Diff</div>
+          <DiffEditor
+            height="300px"
+            language={language}
+            theme={theme === 'dark' ? 'vs-dark' : 'light'}
+            original={typeof originalCode === 'string' ? originalCode : ''}
+            modified={typeof modifiedCode === 'string' ? modifiedCode : ''}
+            options={{
+              renderSideBySide: true,
+              readOnly: true,
+              minimap: { enabled: false },
+              fontSize: 14,
+              fontFamily: 'var(--font-mono)',
+              padding: { top: 16 },
+              scrollBeyondLastLine: false,
+              fixedOverflowWidgets: true,
+            }}
+          />
+        </div>
       </div>
 
       <ResourceLinks links={resources} />
