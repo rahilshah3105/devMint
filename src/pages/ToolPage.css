@@ -187,3 +187,53 @@
 .code-textarea:focus {
   outline: none;
 }
+
+.json-editor-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.json-highlight-layer {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 16px;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+  pointer-events: none;
+}
+
+.json-editor-textarea {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--text-primary);
+  z-index: 1;
+}
+
+.json-editor-textarea::selection {
+  background: rgba(59, 130, 246, 0.32);
+}
+
+.json-editor-textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.json-match-highlight {
+  background: rgba(251, 191, 36, 0.28);
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.35);
+}
+
+.json-match-highlight-active {
+  background: rgba(251, 191, 36, 0.45);
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.65);
+}

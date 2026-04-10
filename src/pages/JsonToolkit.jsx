@@ -3,6 +3,25 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import ResourceLinks from '../components/ResourceLinks';
 import './ToolPage.css';
 
+const AUTO_SEARCH_DELAY_MS = 140;
+
+const escapeHtml = (text = '') => text
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const getLineAndColumn = (text, index) => {
+  if (index < 0) return { line: null, column: null };
+  const textBeforeMatch = text.slice(0, index);
+  const lines = textBeforeMatch.split('\n');
+  return {
+    line: lines.length,
+    column: lines[lines.length - 1].length + 1
+  };
+};
+
 export default function JsonToolkit() {
   const [input, setInput] = useLocalStorage('json_toolkit_input', '');
   const [output, setOutput] = useState('');
@@ -14,6 +33,7 @@ export default function JsonToolkit() {
   const [isWholeWord, setIsWholeWord] = useState(false);
   const inputRef = useRef(null);
   const searchInputRef = useRef(null);
+  const highlightLayerRef = useRef(null);
 
   const isWordChar = (char = '') => /[A-Za-z0-9_]/.test(char);
 
@@ -50,11 +70,12 @@ export default function JsonToolkit() {
     text,
     query,
     caseSensitive = isCaseSensitive,
-    wholeWord = isWholeWord
+    wholeWord = isWholeWord,
+    autoSelectFirst = false
   ) => {
     const matches = getMatchPositions(text, query, caseSensitive, wholeWord);
     setSearchMatches(matches);
-    setActiveMatchIndex(-1);
+    setActiveMatchIndex(matches.length && autoSelectFirst ? 0 : -1);
     return matches;
   };
 
@@ -101,6 +122,15 @@ export default function JsonToolkit() {
     if (output) {
       navigator.clipboard.writeText(output);
       setStatus({ type: 'success', message: 'Output copied to clipboard.' });
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setSearchMatches([]);
+    setActiveMatchIndex(-1);
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
     }
   };
 
@@ -172,10 +202,67 @@ export default function JsonToolkit() {
     };
   }, [handleFindMatch]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!searchTerm.trim()) {
+        setSearchMatches([]);
+        setActiveMatchIndex(-1);
+        return;
+      }
+
+      const matches = getMatchPositions(input, searchTerm, isCaseSensitive, isWholeWord);
+      setSearchMatches(matches);
+      setActiveMatchIndex(matches.length ? 0 : -1);
+    }, AUTO_SEARCH_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, [input, isCaseSensitive, isWholeWord, searchTerm]);
+
   const resources = [
     { title: 'RFC 8259 - JSON Standard', url: 'https://www.rfc-editor.org/rfc/rfc8259' },
     { title: 'MDN: JSON.parse()', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse' }
   ];
+
+  const hasActiveMatch =
+    activeMatchIndex >= 0 &&
+    activeMatchIndex < searchMatches.length &&
+    searchTerm.length > 0;
+
+  const activeMatchStart = hasActiveMatch ? searchMatches[activeMatchIndex] : -1;
+  const activeMatchEnd = hasActiveMatch ? activeMatchStart + searchTerm.length : -1;
+  const { line: activeMatchLine, column: activeMatchColumn } = getLineAndColumn(input, activeMatchStart);
+  const highlightedInputHtml = searchTerm.trim() && searchMatches.length
+    ? (() => {
+      let html = '';
+      let cursor = 0;
+
+      searchMatches.forEach((start, index) => {
+        const end = start + searchTerm.length;
+        const className =
+            index === activeMatchIndex
+              ? 'json-match-highlight json-match-highlight-active'
+              : 'json-match-highlight';
+
+        html += escapeHtml(input.slice(cursor, start));
+        html += `<mark class="${className}">${escapeHtml(input.slice(start, end))}</mark>`;
+        cursor = end;
+      });
+
+      html += escapeHtml(input.slice(cursor));
+      return html;
+    })()
+    : escapeHtml(input);
+
+  const syncHighlightScroll = useCallback(() => {
+    if (!inputRef.current || !highlightLayerRef.current) return;
+    highlightLayerRef.current.scrollTop = inputRef.current.scrollTop;
+    highlightLayerRef.current.scrollLeft = inputRef.current.scrollLeft;
+  }, []);
+
+  useEffect(() => {
+    if (!hasActiveMatch || !inputRef.current) return;
+    inputRef.current.setSelectionRange(activeMatchStart, activeMatchEnd);
+  }, [activeMatchEnd, activeMatchStart, hasActiveMatch]);
 
   return (
     <div className="tool-page h-full flex flex-col">
@@ -202,19 +289,54 @@ export default function JsonToolkit() {
           padding: '12px'
         }}
       >
-        <input
-          ref={searchInputRef}
-          type="text"
-          className="tool-number-input"
-          style={{ width: '280px' }}
-          value={searchTerm}
-          onChange={(e) => {
-            const nextSearchTerm = e.target.value;
-            setSearchTerm(nextSearchTerm);
-            updateSearchState(input, nextSearchTerm);
+        <div
+          style={{
+            position: 'relative',
+            flex: '1 1 460px',
+            minWidth: '280px',
+            maxWidth: '620px'
           }}
-          placeholder="Find text in JSON input"
-        />
+        >
+          <input
+            ref={searchInputRef}
+            type="text"
+            className="tool-number-input"
+            style={{ width: '100%', paddingRight: '36px' }}
+            value={searchTerm}
+            onChange={(e) => {
+              const nextSearchTerm = e.target.value;
+              setSearchTerm(nextSearchTerm);
+              updateSearchState(input, nextSearchTerm, isCaseSensitive, isWholeWord, true);
+            }}
+            placeholder="Find text in JSON input"
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              aria-label="Clear search"
+              title="Clear search"
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '20px',
+                height: '20px',
+                borderRadius: '999px',
+                display: 'grid',
+                placeItems: 'center',
+                fontSize: '14px',
+                lineHeight: 1,
+                border: '1px solid rgba(148,163,184,0.35)',
+                background: 'rgba(148,163,184,0.18)',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              ×
+            </button>
+          )}
+        </div>
         <button className="secondary-button" onClick={() => handleFindMatch(-1)}>
           Find Previous
         </button>
@@ -226,7 +348,7 @@ export default function JsonToolkit() {
           onClick={() => {
             const nextCaseSensitive = !isCaseSensitive;
             setIsCaseSensitive(nextCaseSensitive);
-            updateSearchState(input, searchTerm, nextCaseSensitive);
+            updateSearchState(input, searchTerm, nextCaseSensitive, isWholeWord, true);
           }}
         >
           {isCaseSensitive ? 'Case: Sensitive' : 'Case: Insensitive'}
@@ -236,7 +358,7 @@ export default function JsonToolkit() {
           onClick={() => {
             const nextWholeWord = !isWholeWord;
             setIsWholeWord(nextWholeWord);
-            updateSearchState(input, searchTerm, isCaseSensitive, nextWholeWord);
+            updateSearchState(input, searchTerm, isCaseSensitive, nextWholeWord, true);
           }}
         >
           {isWholeWord ? 'Match: Whole Word' : 'Match: Partial'}
@@ -246,6 +368,11 @@ export default function JsonToolkit() {
             ? `${searchMatches.length} match${searchMatches.length === 1 ? '' : 'es'}`
             : 'Type text to start searching'}
         </span>
+        <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          {hasActiveMatch
+            ? `Line ${activeMatchLine}, Column ${activeMatchColumn}`
+            : 'Line -, Column -'}
+        </span>
         <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
           Shortcuts: Ctrl/Cmd+F focus, Enter or F3 next, Shift+Enter or Shift+F3 previous, Ctrl/Cmd+G next
         </span>
@@ -254,19 +381,28 @@ export default function JsonToolkit() {
       <div className="split-view flex-1">
         <div className="split-panel glass-panel">
           <div className="panel-header">JSON Input</div>
-          <textarea
-            ref={inputRef}
-            className="code-textarea custom-scrollbar"
-            value={input}
-            onChange={(e) => {
-              const nextInput = e.target.value;
-              setInput(nextInput);
-              if (searchTerm.trim()) {
-                updateSearchState(nextInput, searchTerm);
-              }
-            }}
-            placeholder="Paste JSON here..."
-          />
+          <div className="json-editor-wrap">
+            <pre
+              ref={highlightLayerRef}
+              aria-hidden="true"
+              className="json-highlight-layer custom-scrollbar"
+              dangerouslySetInnerHTML={{ __html: highlightedInputHtml || '&nbsp;' }}
+            />
+            <textarea
+              ref={inputRef}
+              className="code-textarea custom-scrollbar json-editor-textarea"
+              value={input}
+              onScroll={syncHighlightScroll}
+              onChange={(e) => {
+                const nextInput = e.target.value;
+                setInput(nextInput);
+                if (searchTerm.trim()) {
+                  updateSearchState(nextInput, searchTerm, isCaseSensitive, isWholeWord, true);
+                }
+              }}
+              placeholder="Paste JSON here..."
+            />
+          </div>
         </div>
 
         <div className="split-panel glass-panel">
