@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import ResourceLinks from '../components/ResourceLinks';
 import './ToolPage.css';
 
 const AUTO_SEARCH_DELAY_MS = 140;
+const LARGE_INPUT_THRESHOLD_CHARS = 500000;
+const MAX_HIGHLIGHT_INPUT_CHARS = 250000;
+const MAX_HIGHLIGHT_MATCHES = 2500;
+const JSON_TOOLKIT_STORAGE_KEY = 'devtoolkit_json_toolkit_input';
+const MAX_PERSISTED_INPUT_CHARS = 200000;
 
 const escapeHtml = (text = '') => text
   .replace(/&/g, '&amp;')
@@ -23,7 +27,16 @@ const getLineAndColumn = (text, index) => {
 };
 
 export default function JsonToolkit() {
-  const [input, setInput] = useLocalStorage('json_toolkit_input', '');
+  const [input, setInput] = useState(() => {
+    try {
+      const raw = localStorage.getItem(JSON_TOOLKIT_STORAGE_KEY);
+      if (raw == null) return '';
+      const parsed = JSON.parse(raw);
+      return typeof parsed === 'string' ? parsed : '';
+    } catch {
+      return '';
+    }
+  });
   const [output, setOutput] = useState('');
   const [status, setStatus] = useState({ type: '', message: '' });
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,9 +44,12 @@ export default function JsonToolkit() {
   const [activeMatchIndex, setActiveMatchIndex] = useState(-1);
   const [isCaseSensitive, setIsCaseSensitive] = useState(false);
   const [isWholeWord, setIsWholeWord] = useState(false);
+  const [goToLineValue, setGoToLineValue] = useState('');
+  const [cursorLine, setCursorLine] = useState(1);
   const inputRef = useRef(null);
   const searchInputRef = useRef(null);
   const highlightLayerRef = useRef(null);
+  const isLargeInput = input.length >= LARGE_INPUT_THRESHOLD_CHARS;
 
   const isWordChar = (char = '') => /[A-Za-z0-9_]/.test(char);
 
@@ -64,6 +80,42 @@ export default function JsonToolkit() {
     }
 
     return matches;
+  };
+
+  const getSearchStatusMessage = (matches) => {
+    if (!searchTerm.trim()) return '';
+    if (!matches.length) return 'No matches found in JSON input.';
+    if (isLargeInput) {
+      return `Large input mode: ${matches.length} match${matches.length === 1 ? '' : 'es'} found. Highlight overlay is disabled for better performance.`;
+    }
+    return `Found ${matches.length} match${matches.length === 1 ? '' : 'es'}.`;
+  };
+
+  const getIndexForLine = (text, lineNumber) => {
+    if (!text) return 0;
+    if (lineNumber <= 1) return 0;
+
+    let currentLine = 1;
+    for (let i = 0; i < text.length; i += 1) {
+      if (text[i] === '\n') {
+        currentLine += 1;
+        if (currentLine === lineNumber) {
+          return i + 1;
+        }
+      }
+    }
+
+    return -1;
+  };
+
+  const getLineForIndex = (text, index) => {
+    if (index <= 0) return 1;
+    let line = 1;
+    const maxIndex = Math.min(index, text.length);
+    for (let i = 0; i < maxIndex; i += 1) {
+      if (text[i] === '\n') line += 1;
+    }
+    return line;
   };
 
   const updateSearchState = (
@@ -134,6 +186,48 @@ export default function JsonToolkit() {
     }
   };
 
+  const handleGoToLine = ({ silent = false } = {}) => {
+    if (!input.length) {
+      if (!silent) {
+        setStatus({ type: 'error', message: 'Input is empty. Paste JSON first.' });
+      }
+      return;
+    }
+
+    const parsedLine = Number(goToLineValue);
+    if (!Number.isInteger(parsedLine) || parsedLine < 1) {
+      if (!silent) {
+        setStatus({ type: 'error', message: 'Enter a valid line number (1 or greater).' });
+      }
+      return;
+    }
+
+    const index = getIndexForLine(input, parsedLine);
+    if (index === -1) {
+      if (!silent) {
+        setStatus({ type: 'error', message: `Line ${parsedLine} is out of range.` });
+      }
+      return;
+    }
+
+    if (inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.setSelectionRange(index, index);
+    }
+
+    setCursorLine(parsedLine);
+
+    if (!silent) {
+      setStatus({ type: 'success', message: `Moved cursor to line ${parsedLine}.` });
+    }
+  };
+
+  const updateCursorLineFromSelection = useCallback(() => {
+    if (!inputRef.current) return;
+    const nextLine = getLineForIndex(input, inputRef.current.selectionStart ?? 0);
+    setCursorLine(nextLine);
+  }, [input]);
+
   const handleFindMatch = useCallback((direction = 1) => {
     if (!searchTerm.trim()) {
       setStatus({ type: 'error', message: 'Enter text to search in JSON input.' });
@@ -194,6 +288,12 @@ export default function JsonToolkit() {
         event.preventDefault();
         handleFindMatch(event.shiftKey ? -1 : 1);
       }
+
+      const isGoToLineInputFocused = document.activeElement?.id === 'json-go-to-line';
+      if (isGoToLineInputFocused && event.key === 'Enter') {
+        event.preventDefault();
+        handleGoToLine();
+      }
     };
 
     window.addEventListener('keydown', onKeyDown);
@@ -218,6 +318,38 @@ export default function JsonToolkit() {
     return () => clearTimeout(timer);
   }, [input, isCaseSensitive, isWholeWord, searchTerm]);
 
+  useEffect(() => {
+    if (!goToLineValue.trim()) return;
+
+    const timer = setTimeout(() => {
+      handleGoToLine({ silent: true });
+    }, 180);
+
+    return () => clearTimeout(timer);
+  }, [goToLineValue]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        if (input.length <= MAX_PERSISTED_INPUT_CHARS) {
+          localStorage.setItem(JSON_TOOLKIT_STORAGE_KEY, JSON.stringify(input));
+        }
+      } catch {
+        // Ignore storage quota errors so large input editing remains stable.
+      }
+    }, 220);
+
+    return () => clearTimeout(timer);
+  }, [input]);
+
+  useEffect(() => {
+    if (!input.length) {
+      setCursorLine(1);
+      return;
+    }
+    updateCursorLineFromSelection();
+  }, [input, updateCursorLineFromSelection]);
+
   const resources = [
     { title: 'RFC 8259 - JSON Standard', url: 'https://www.rfc-editor.org/rfc/rfc8259' },
     { title: 'MDN: JSON.parse()', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse' }
@@ -231,7 +363,15 @@ export default function JsonToolkit() {
   const activeMatchStart = hasActiveMatch ? searchMatches[activeMatchIndex] : -1;
   const activeMatchEnd = hasActiveMatch ? activeMatchStart + searchTerm.length : -1;
   const { line: activeMatchLine, column: activeMatchColumn } = getLineAndColumn(input, activeMatchStart);
-  const highlightedInputHtml = searchTerm.trim() && searchMatches.length
+  const canRenderHighlightLayer = !isLargeInput && input.length <= MAX_HIGHLIGHT_INPUT_CHARS;
+  const canRenderMarkedHighlights = canRenderHighlightLayer && searchMatches.length <= MAX_HIGHLIGHT_MATCHES;
+  const requestedLine = Number(goToLineValue);
+  const requestedLineIndex = Number.isInteger(requestedLine) && requestedLine >= 1
+    ? getIndexForLine(input, requestedLine)
+    : -1;
+  const canGoToRequestedLine = requestedLineIndex >= 0 && requestedLine !== cursorLine;
+
+  const highlightedInputHtml = searchTerm.trim() && searchMatches.length && canRenderMarkedHighlights
     ? (() => {
       let html = '';
       let cursor = 0;
@@ -251,7 +391,9 @@ export default function JsonToolkit() {
       html += escapeHtml(input.slice(cursor));
       return html;
     })()
-    : escapeHtml(input);
+    : canRenderHighlightLayer
+      ? escapeHtml(input)
+      : '';
 
   const syncHighlightScroll = useCallback(() => {
     if (!inputRef.current || !highlightLayerRef.current) return;
@@ -278,6 +420,19 @@ export default function JsonToolkit() {
           <button className="primary-button" onClick={handleCopy}>Copy Output</button>
         </div>
       </header>
+
+      {isLargeInput && (
+        <div
+          className="rounded-md px-4 py-2 text-sm"
+          style={{
+            background: 'rgba(245,158,11,0.12)',
+            border: '1px solid rgba(245,158,11,0.35)',
+            color: 'rgb(251,191,36)'
+          }}
+        >
+          Large input mode is active for better stability. Text search and match navigation still work, but inline highlight rendering is disabled.
+        </div>
+      )}
 
       <div
         className="glass-panel"
@@ -343,6 +498,23 @@ export default function JsonToolkit() {
         <button className="secondary-button" onClick={() => handleFindMatch(1)}>
           Find Next
         </button>
+        <input
+          id="json-go-to-line"
+          type="number"
+          min="1"
+          className="tool-number-input"
+          style={{ width: '140px' }}
+          value={goToLineValue}
+          onChange={(e) => setGoToLineValue(e.target.value)}
+          placeholder="Go to line"
+        />
+        <button
+          className="secondary-button"
+          onClick={() => handleGoToLine({ silent: false })}
+          disabled={!canGoToRequestedLine}
+        >
+          Go
+        </button>
         <button
           className="secondary-button"
           onClick={() => {
@@ -376,23 +548,33 @@ export default function JsonToolkit() {
         <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
           Shortcuts: Ctrl/Cmd+F focus, Enter or F3 next, Shift+Enter or Shift+F3 previous, Ctrl/Cmd+G next
         </span>
+        {searchTerm.trim() && (
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+            {getSearchStatusMessage(searchMatches)}
+          </span>
+        )}
       </div>
 
       <div className="split-view flex-1">
         <div className="split-panel glass-panel">
           <div className="panel-header">JSON Input</div>
           <div className="json-editor-wrap">
-            <pre
-              ref={highlightLayerRef}
-              aria-hidden="true"
-              className="json-highlight-layer custom-scrollbar"
-              dangerouslySetInnerHTML={{ __html: highlightedInputHtml || '&nbsp;' }}
-            />
+            {canRenderHighlightLayer && (
+              <pre
+                ref={highlightLayerRef}
+                aria-hidden="true"
+                className="json-highlight-layer custom-scrollbar"
+                dangerouslySetInnerHTML={{ __html: highlightedInputHtml || '&nbsp;' }}
+              />
+            )}
             <textarea
               ref={inputRef}
-              className="code-textarea custom-scrollbar json-editor-textarea"
+              className={`code-textarea custom-scrollbar json-editor-textarea ${canRenderHighlightLayer ? '' : 'json-editor-textarea-plain'}`}
               value={input}
               onScroll={syncHighlightScroll}
+              onSelect={updateCursorLineFromSelection}
+              onKeyUp={updateCursorLineFromSelection}
+              onClick={updateCursorLineFromSelection}
               onChange={(e) => {
                 const nextInput = e.target.value;
                 setInput(nextInput);

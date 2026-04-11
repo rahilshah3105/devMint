@@ -219,6 +219,10 @@
   z-index: 1;
 }
 
+.json-editor-textarea-plain {
+  color: var(--text-primary);
+}
+
 .json-editor-textarea::selection {
   background: rgba(59, 130, 246, 0.32);
 }
