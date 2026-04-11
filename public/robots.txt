@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://code-line-formatter.vercel.app/sitemap.xml

@@ -33,6 +33,19 @@
   max-width: 600px;
 }
 
+.developer-app-card:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--border-focus);
+}
+
+.developer-app-card:hover .developer-app-card-title {
+  color: var(--accent-secondary);
+}
+
+.developer-app-card:hover .developer-app-card-icon {
+  color: var(--text-primary);
+}
+
 .primary-button {
   background-color: var(--accent-primary);
   color: white;
