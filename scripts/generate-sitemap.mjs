@@ -73,7 +73,7 @@ function buildRouteSitemapXml(routePaths, lastmod) {
 }
 
 function buildSitemapIndexXml(lastmod) {
-  const routeSitemapUrl = `${NORMALIZED_SITE_URL}/sitemap-routes.xml`;
+  const routeSitemapUrl = `${NORMALIZED_SITE_URL}/sitemap.xml`;
   const indexEntries = [
     '  <sitemap>',
     `    <loc>${routeSitemapUrl}</loc>`,
@@ -87,8 +87,8 @@ function buildSitemapIndexXml(lastmod) {
 async function main() {
   const routePaths = getRoutePaths();
   const lastmod = new Date().toISOString().slice(0, 10);
-  const routeSitemapPath = path.resolve(__dirname, '../public/sitemap-routes.xml');
-  const sitemapIndexPath = path.resolve(__dirname, '../public/sitemap.xml');
+  const routeSitemapPath = path.resolve(__dirname, '../public/sitemap.xml');
+  const sitemapIndexPath = path.resolve(__dirname, '../public/sitemap-index.xml');
 
   const routeSitemapXml = buildRouteSitemapXml(routePaths, lastmod);
   const sitemapIndexXml = buildSitemapIndexXml(lastmod);
@@ -96,8 +96,8 @@ async function main() {
   await writeFile(routeSitemapPath, routeSitemapXml, 'utf8');
   await writeFile(sitemapIndexPath, sitemapIndexXml, 'utf8');
 
-  console.log(`Sitemap index generated at ${sitemapIndexPath}`);
-  console.log(`Route sitemap generated at ${routeSitemapPath}`);
+  console.log(`Sitemap generated at ${routeSitemapPath}`);
+  console.log(`Optional sitemap index generated at ${sitemapIndexPath}`);
 }
 
 main().catch((error) => {

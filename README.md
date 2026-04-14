@@ -53,7 +53,7 @@ Sitemap is now generated from route entries in `src/utils/seo.js`.
 - Run manually: `npm run sitemap:generate`
 - Runs automatically before every production build via `prebuild`
 - Output files:
-	- `public/sitemap.xml` (sitemap index for Search Console submission)
-	- `public/sitemap-routes.xml` (route URLs)
+	- `public/sitemap.xml` (primary URL sitemap for Search Console submission)
+	- `public/sitemap-index.xml` (optional sitemap index)
 
 When adding or removing routes, update `SEO_BY_PATH` and regenerate/deploy.
