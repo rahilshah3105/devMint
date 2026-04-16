@@ -25,6 +25,12 @@ const FEATURE_SEARCH_ITEMS = [
   { name: 'Base Converter', path: '/base-converter', group: 'Converters & Encoders' },
   { name: 'UUID Generator', path: '/uuid', group: 'Generators & Utilities' },
   { name: 'Hash Generator', path: '/hash', group: 'Generators & Utilities' },
+  {
+    name: 'JavaScript Runner',
+    path: '/js-runner',
+    group: 'Generators & Utilities',
+    keywords: ['js runner', 'javascript runner', 'js code runner', 'browser javascript', 'run js', 'browser js']
+  },
   { name: 'Lorem Ipsum', path: '/lorem', group: 'Generators & Utilities' },
   { name: 'Timestamp Converter', path: '/timestamp', group: 'Generators & Utilities' },
   { name: 'Regex Tester', path: '/regex', group: 'Generators & Utilities' },
@@ -40,7 +46,31 @@ const FEATURE_SEARCH_ITEMS = [
   { name: 'Log Analyzer', path: '/log-analyzer', group: 'Generators & Utilities' },
   { name: 'Git PR Helper', path: '/git-pr-helper', group: 'Generators & Utilities' },
   { name: 'Cron Explainer', path: '/cron', group: 'Generators & Utilities' },
-  { name: 'Remote Runner', path: '/remote-runner', group: 'Generators & Utilities' },
+  {
+    name: 'Remote Runner',
+    path: '/remote-runner',
+    group: 'Generators & Utilities',
+    keywords: [
+      'code runner',
+      'language runner',
+      'python runner',
+      'javascript runner',
+      'node runner',
+      'nodejs runner',
+      'typescript runner',
+      'java runner',
+      'c runner',
+      'cpp runner',
+      'c++ runner',
+      'csharp runner',
+      'c# runner',
+      'go runner',
+      'golang runner',
+      'rust runner',
+      'php runner',
+      'ruby runner'
+    ]
+  },
   { name: 'Developer Apps', path: '/apps', group: 'Ecosystem' },
 ];
 
@@ -48,60 +78,94 @@ function normalizeText(value) {
   return (value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-function fuzzyScore(query, target) {
-  if (!query) return 1;
-
-  const normalizedQuery = normalizeText(query);
-  const normalizedTarget = normalizeText(target);
-
-  if (!normalizedQuery) return 1;
-  if (!normalizedTarget) return -1;
-  if (normalizedTarget.includes(normalizedQuery)) {
-    return 1000 - (normalizedTarget.indexOf(normalizedQuery) * 2);
-  }
-
-  let score = 0;
-  let queryIndex = 0;
-  let streak = 0;
-
-  for (let i = 0; i < normalizedTarget.length && queryIndex < normalizedQuery.length; i += 1) {
-    if (normalizedTarget[i] === normalizedQuery[queryIndex]) {
-      queryIndex += 1;
-      streak += 1;
-      score += 8 + streak * 2;
-    } else {
-      streak = 0;
-      score -= 1;
-    }
-  }
-
-  if (queryIndex !== normalizedQuery.length) return -1;
-
-  score -= Math.max(0, normalizedTarget.length - normalizedQuery.length);
-  return score;
+function buildSearchText(item) {
+  return [
+    item.name,
+    item.group,
+    item.path,
+    ...(item.keywords || []),
+    ...item.name.split(/[^a-z0-9]+/i).filter(Boolean),
+    ...item.group.split(/[^a-z0-9]+/i).filter(Boolean),
+    ...item.path.split(/[^a-z0-9]+/i).filter(Boolean),
+  ].join(' ');
 }
 
-function tokenMatchScore(query, target) {
-  const queryTokens = (query || '')
+function fuzzyScore(query, targetText) {
+  const normalizedQuery = normalizeText(query);
+  const normalizedTarget = normalizeText(targetText);
+
+  if (!normalizedQuery || !normalizedTarget) return 0;
+
+  let score = 0;
+
+  if (normalizedTarget === normalizedQuery) {
+    score += 5000;
+  }
+
+  if (normalizedTarget.startsWith(normalizedQuery)) {
+    score += 2200 - normalizedTarget.length;
+  }
+
+  if (normalizedTarget.includes(normalizedQuery)) {
+    score += 1800 - normalizedTarget.indexOf(normalizedQuery);
+  }
+
+  const queryTokens = query
     .toLowerCase()
     .split(/\s+/)
     .map((token) => token.trim())
-    .filter(Boolean)
-    .filter((token) => token.length >= 3);
+    .filter(Boolean);
 
-  if (!queryTokens.length) return -1;
+  const targetTokens = targetText
+    .toLowerCase()
+    .split(/[^a-z0-9+.#-]+/i)
+    .map((token) => token.trim())
+    .filter(Boolean);
 
-  const rawTarget = (target || '').toLowerCase();
-  const normalizedTarget = normalizeText(target);
-  const matchedTokens = queryTokens.filter((token) => {
+  for (const token of queryTokens) {
     const normalizedToken = normalizeText(token);
-    return rawTarget.includes(token) || normalizedTarget.includes(normalizedToken);
+    if (!normalizedToken) continue;
+
+    const exactTokenMatch = targetTokens.some((targetToken) => targetToken === token);
+    const partialTokenMatch = targetTokens.some((targetToken) => normalizeText(targetToken).includes(normalizedToken));
+
+    if (exactTokenMatch) {
+      score += 600;
+    } else if (partialTokenMatch) {
+      score += 320;
+    } else if (normalizedTarget.includes(normalizedToken)) {
+      score += 250;
+    } else {
+      let queryIndex = 0;
+      let streak = 0;
+
+      for (let i = 0; i < normalizedTarget.length && queryIndex < normalizedToken.length; i += 1) {
+        if (normalizedTarget[i] === normalizedToken[queryIndex]) {
+          queryIndex += 1;
+          streak += 1;
+          score += 4 + streak;
+        } else {
+          streak = 0;
+        }
+      }
+
+      if (queryIndex === normalizedToken.length) {
+        score += 90;
+      }
+    }
+  }
+
+  const queryLetters = new Set(normalizedQuery);
+  const targetLetters = new Set(normalizedTarget);
+  let sharedLetters = 0;
+  queryLetters.forEach((letter) => {
+    if (targetLetters.has(letter)) sharedLetters += 1;
   });
 
-  if (!matchedTokens.length) return -1;
-  if (matchedTokens.length !== queryTokens.length) return -1;
+  score += sharedLetters * 5;
+  score -= Math.max(0, normalizedTarget.length - normalizedQuery.length) * 0.2;
 
-  return 600 + matchedTokens.length * 70;
+  return score;
 }
 
 export default function Layout() {
@@ -119,12 +183,10 @@ export default function Layout() {
 
     return FEATURE_SEARCH_ITEMS
       .map((item) => {
-        const keywordsLabel = (item.keywords || []).join(' ');
-        const label = `${item.name} ${item.group} ${keywordsLabel}`;
-        const score = Math.max(fuzzyScore(query, label), tokenMatchScore(query, label));
+        const score = fuzzyScore(query, buildSearchText(item));
         return { item, score };
       })
-      .filter((entry) => entry.score >= 0)
+      .filter((entry) => entry.score > 0)
       .sort((a, b) => b.score - a.score)
       .map((entry) => entry.item);
   }, [searchText]);
@@ -158,20 +220,41 @@ export default function Layout() {
   }, []);
 
   useEffect(() => {
+    const isEditableTarget = (target) => {
+      if (!(target instanceof HTMLElement)) return false;
+      return (
+        target.isContentEditable ||
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT'
+      );
+    };
+
     const onKeyDown = (event) => {
-      const isSearchShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+      const isSearchShortcut =
+        (event.ctrlKey || event.metaKey) &&
+        !event.shiftKey &&
+        !event.altKey &&
+        (event.key.toLowerCase() === 'k' || event.code === 'KeyK');
+
       if (isSearchShortcut) {
         event.preventDefault();
+        event.stopPropagation();
         setSearchOpen(true);
       }
+
+      // Keep ESC handling out of editable fields so it doesn't fight native behavior.
+      if (isEditableTarget(event.target)) return;
+
       if (event.key === 'Escape' && searchOpen) {
         event.preventDefault();
         closeSearch();
       }
     };
 
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    // Capture phase helps when child widgets (like Monaco) swallow keyboard events.
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
   }, [searchOpen]);
 
   useEffect(() => {

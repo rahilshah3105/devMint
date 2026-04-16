@@ -7,6 +7,13 @@ export default function JSRunner() {
   const [inputCode, setInputCode] = useState('// Write your JS code here\nconsole.log("Hello, DevToolkit!");\n');
   const [logs, setLogs] = useState([]);
 
+  const handleEditorShortcut = (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      runCode();
+    }
+  };
+
   const runCode = () => {
     const logOutput = [];
     const originalConsole = {
@@ -81,8 +88,9 @@ export default function JSRunner() {
     <div className="tool-page">
       <header className="tool-header">
         <div>
-          <h2>JavaScript Runner</h2>
-          <p>Execute JavaScript safely right in the browser. See logs and errors natively.</p>
+          <h2>JavaScript Runner (Browser)</h2>
+          <p>Runs JavaScript directly in your browser context. Use Remote Runner for JavaScript (Node.js) execution.</p>
+          <p className="text-xs text-[var(--text-muted)] mt-2">Shortcut: Ctrl/Cmd + Enter to run code</p>
         </div>
         <div className="flex gap-2">
           <button className="secondary-button flex items-center gap-2" onClick={clearLogs}>
@@ -101,6 +109,7 @@ export default function JSRunner() {
             className="code-textarea custom-scrollbar"
             value={inputCode}
             onChange={(e) => setInputCode(e.target.value)}
+            onKeyDown={handleEditorShortcut}
             spellCheck="false"
           />
         </div>

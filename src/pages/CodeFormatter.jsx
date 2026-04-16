@@ -15,6 +15,10 @@ export default function CodeFormatter() {
 
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
+      editor.trigger('keyboard', 'editor.action.triggerSuggest', {});
+    });
   };
 
   const formatCode = () => {
@@ -53,8 +57,8 @@ export default function CodeFormatter() {
             {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />} 
             {copied ? 'Copied' : 'Copy'}
           </button>
-          <button className="primary-button !flex !items-center gap-2" onClick={formatCode}>
-            <AlignLeft size={16} /> Format Code
+          <button className="primary-button flex items-center gap-2" onClick={formatCode}>
+            <AlignLeft size={16} className='flex-shrink-0'/> Format Code
           </button>
         </div>
       </header>

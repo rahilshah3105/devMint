@@ -9,7 +9,7 @@ import './ToolPage.css';
 // Wandbox API compilers — stable verified versions
 const LANGUAGES = [
   { id: 'python', name: 'Python', compiler: 'cpython-3.12.7', version: '3.12.7' },
-  { id: 'javascript', name: 'Node.js', compiler: 'nodejs-20.17.0', version: '20.17.0' },
+  { id: 'javascript', name: 'JavaScript (Node.js)', compiler: 'nodejs-20.17.0', version: '20.17.0' },
   { id: 'typescript', name: 'TypeScript', compiler: 'typescript-5.6.2', version: '5.6.2' },
   { id: 'java', name: 'Java', compiler: 'openjdk-jdk-22+36', version: '22' },
   { id: 'cpp', name: 'C++', compiler: 'gcc-13.2.0', version: '13.2.0' },
@@ -59,6 +59,7 @@ export default function RemoteRunner() {
   const [errorMsg, setErrorMsg] = useState('');
   const [copied, setCopied] = useState(false);
   const editorRef = useRef(null);
+  const executeCodeRef = useRef(() => {});
 
   const handleLanguageChange = (e) => {
     const langId = e.target.value;
@@ -68,10 +69,6 @@ export default function RemoteRunner() {
     setOutput('');
     setErrorMsg('');
     try { localStorage.setItem(STORAGE_KEY, langId); } catch { /* ignore */ }
-  };
-
-  const handleEditorDidMount = (editor) => {
-    editorRef.current = editor;
   };
 
   const copyCode = () => {
@@ -133,6 +130,20 @@ export default function RemoteRunner() {
     }
   };
 
+  executeCodeRef.current = executeCode;
+
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      if (!isLoading) executeCodeRef.current();
+    });
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
+      editor.trigger('keyboard', 'editor.action.triggerSuggest', {});
+    });
+  };
+
   const resources = [
     { title: "Wandbox API Documentation", url: "https://github.com/melpon/wandbox/blob/master/kennel/API.rst" },
     { title: "Wandbox Main Site", url: "https://wandbox.org/" }
@@ -143,7 +154,8 @@ export default function RemoteRunner() {
       <header className="tool-header">
         <div>
           <h2>Multi-Language Remote Runner</h2>
-          <p>Instantly compile and execute Code securely in isolated containers via the public Piston API.</p>
+          <p>Instantly compile and execute code in isolated containers via the public Wandbox API.</p>
+          <p className="text-xs text-[var(--text-muted)] mt-2">Shortcut: Ctrl/Cmd + Enter to run code</p>
         </div>
         <div className="flex gap-2 items-center relative z-20">
           <CustomSelect
