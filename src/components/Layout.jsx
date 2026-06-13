@@ -371,10 +371,13 @@ export default function Layout() {
         <footer className="footer-section">
           <div className="footer-content">
             <div className="footer-left">
+              <Link to="/privacy" className="footer-link">Privacy Policy</Link>
+            </div>
+            <div className="footer-center">
               <span>Made with <span className="heart-icon">❤️</span> in India</span>
             </div>
             <div className="footer-right">
-              <Link to="/privacy" className="footer-link">Privacy Policy</Link>
+              &copy; 2026 DevMint. All rights reserved.
             </div>
           </div>
         </footer>
