@@ -46,7 +46,7 @@ export default function MultiLangEditor() {
             scrollBeyondLastLine: false,
             smoothScrolling: true,
             cursorBlinking: 'smooth',
-            fixedOverflowWidgets: true,
+            fixedOverflowWidgets: false,
           }}
         />
       </div>

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "collab-server": "node collab-server/index.cjs",
     "sitemap:generate": "node scripts/generate-sitemap.mjs",
     "prebuild": "npm run sitemap:generate",
     "build": "vite build",
@@ -17,6 +18,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1"
+    ,
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

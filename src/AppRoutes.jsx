@@ -42,6 +42,7 @@ import UnitTestScaffold from './pages/UnitTestScaffold';
 import E2EScenarioBuilder from './pages/E2EScenarioBuilder';
 import LogAnalyzer from './pages/LogAnalyzer';
 import GitPrHelper from './pages/GitPrHelper';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 function RouteSeo() {
   const location = useLocation();
@@ -109,6 +110,7 @@ export default function AppRoutes() {
           {/* Utilities */}
           <Route path="remote-runner" element={<RemoteRunner />} />
           <Route path="js-runner" element={<JSRunner />} />
+          <Route path="share/:id" element={<JSRunner />} />
           <Route path="regex" element={<RegexTester />} />
           <Route path="hash" element={<HashGenerator />} />
           <Route path="uuid" element={<UuidGenerator />} />
@@ -132,6 +134,7 @@ export default function AppRoutes() {
 
           {/* Ecosystem */}
           <Route path="apps" element={<DeveloperApps />} />
+          <Route path="privacy" element={<PrivacyPolicy />} />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/formatter" replace />} />

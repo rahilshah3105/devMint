@@ -218,3 +218,13 @@ input[type="checkbox"]:hover {
     @apply shrink-0;
   }
 }
+
+/* Ensure code editors/textareas have visible text and caret in both themes */
+.code-textarea {
+  color: var(--text-primary);
+  caret-color: var(--accent-primary);
+}
+.code-textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}

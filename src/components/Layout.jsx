@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Sidebar from './Sidebar';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { Menu, Search } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
+import AdBanner from './AdBanner';
 import './Layout.css';
 
 const FEATURE_SEARCH_ITEMS = [
@@ -169,6 +171,7 @@ function fuzzyScore(query, targetText) {
 }
 
 export default function Layout() {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -340,7 +343,41 @@ export default function Layout() {
             <Menu size={20} />
           </button>
         )}
-        <Outlet />
+
+        {/* Top Ad Slot */}
+        <div style={{ padding: '24px 32px 0 32px', width: '100%' }}>
+          <AdBanner
+            client={import.meta.env.VITE_ADSENSE_CLIENT_ID}
+            slot={import.meta.env.VITE_ADSENSE_TOP_SLOT}
+            mode={theme}
+          />
+        </div>
+
+        {/* Dynamic Tool Content */}
+        <div className="layout-content-area">
+          <Outlet />
+        </div>
+
+        {/* Bottom Ad Slot */}
+        <div style={{ padding: '0 32px 24px 32px', width: '100%', marginTop: 'auto' }}>
+          <AdBanner
+            client={import.meta.env.VITE_ADSENSE_CLIENT_ID}
+            slot={import.meta.env.VITE_ADSENSE_BOTTOM_SLOT}
+            mode={theme}
+          />
+        </div>
+
+        {/* Premium Footer */}
+        <footer className="footer-section">
+          <div className="footer-content">
+            <div className="footer-left">
+              <span>Made with <span className="heart-icon">❤️</span> in India</span>
+            </div>
+            <div className="footer-right">
+              <Link to="/privacy" className="footer-link">Privacy Policy</Link>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   );

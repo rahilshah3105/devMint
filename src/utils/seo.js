@@ -1,24 +1,24 @@
-export const SITE_URL = 'https://code-line-formatter.vercel.app';
+export const SITE_URL = 'https://devmint-tools.vercel.app';
 
 export const DEFAULT_SEO = {
-  title: 'Code Line Formatter | Free Online Developer Tools',
+  title: 'DevMint | Free Online Developer Tools',
   description:
     'Free online developer tools for formatting, JSON handling, regex testing, converters, generators, and everyday coding workflows.'
 };
 
 export const SEO_BY_PATH = {
   '/': {
-    title: 'Code Line Formatter | Free Online Developer Tools',
+    title: 'DevMint | Free Online Developer Tools',
     description:
       'Free online developer tools for formatting, JSON handling, regex testing, converters, generators, and everyday coding workflows.'
   },
   '/formatter': {
-    title: 'Code Formatter Online | Code Line Formatter',
+    title: 'Code Formatter Online | DevMint',
     description:
       'Format and clean up code quickly with a fast online formatter built for daily development workflows.'
   },
   '/editor': {
-    title: 'Multi-language Code Editor | Code Line Formatter',
+    title: 'Multi-language Code Editor | DevMint',
     description:
       'Write, edit, and inspect code snippets in a multi-language editor designed for quick testing and iteration.'
   },
@@ -33,7 +33,7 @@ export const SEO_BY_PATH = {
       'Shrink and compact code output for easier sharing and reduced payload size in development workflows.'
   },
   '/json-types': {
-    title: 'JSON to Types Converter | Code Line Formatter',
+    title: 'JSON to Types Converter | DevMint',
     description:
       'Convert JSON payloads to type definitions quickly for safer development in typed codebases.'
   },
@@ -43,12 +43,12 @@ export const SEO_BY_PATH = {
       'Use one toolkit to parse, validate, and format JSON while debugging APIs and data structures.'
   },
   '/base64': {
-    title: 'Base64 Encoder Decoder | Code Line Formatter',
+    title: 'Base64 Encoder Decoder | DevMint',
     description:
       'Encode and decode Base64 strings instantly for authentication headers, payloads, and debugging.'
   },
   '/url': {
-    title: 'URL Encoder Decoder | Code Line Formatter',
+    title: 'URL Encoder Decoder | DevMint',
     description:
       'Encode and decode URL components safely to avoid malformed query strings and request errors.'
   },
@@ -63,7 +63,7 @@ export const SEO_BY_PATH = {
       'Convert between HEX, RGB, and HSL color formats with quick copy-ready output for UI development.'
   },
   '/remote-runner': {
-    title: 'Remote Runner | Code Line Formatter',
+    title: 'Remote Runner | DevMint',
     description:
       'Run code execution workflows remotely for experiments and lightweight sandbox tasks.'
   },
@@ -98,7 +98,7 @@ export const SEO_BY_PATH = {
       'Convert Unix timestamps and readable dates instantly for logs, APIs, and debugging.'
   },
   '/utility-tools': {
-    title: 'Utility Tools for Developers | Code Line Formatter',
+    title: 'Utility Tools for Developers | DevMint',
     description:
       'Access practical utility tools for everyday development and troubleshooting tasks.'
   },
@@ -173,8 +173,13 @@ export const SEO_BY_PATH = {
       'Draft clearer pull request summaries and structured change notes for faster reviews.'
   },
   '/apps': {
-    title: 'Recommended Developer Apps | Code Line Formatter',
+    title: 'Recommended Developer Apps | DevMint',
     description:
       'Discover recommended developer apps and project links that complement this toolkit.'
+  },
+  '/privacy': {
+    title: 'Privacy Policy | DevMint',
+    description:
+      'Read the privacy policy of DevMint, which details our cookie usage, local execution model, and Google AdSense compliance.'
   }
 };

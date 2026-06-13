@@ -80,7 +80,8 @@ export default function RemoteRunner() {
   const executeCode = async () => {
     setIsLoading(true);
     setErrorMsg('');
-    setOutput('Compiling and running on Wandbox (free community compiler)...');
+    // setOutput('Compiling and running on Wandbox (free community compiler)...');
+    setOutput('Compiling and running...');
 
     try {
       const response = await fetch('/api/wandbox/compile.json', {
@@ -219,7 +220,7 @@ export default function RemoteRunner() {
                 smoothScrolling: true,
                 cursorBlinking: 'smooth',
                 renderLineHighlight: 'all',
-                fixedOverflowWidgets: true,
+                fixedOverflowWidgets: false,
               }}
             />
           </div>

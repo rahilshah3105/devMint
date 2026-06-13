@@ -88,17 +88,16 @@ const navGroups = [
 
 export default function Sidebar({ isOpen, setIsOpen, onOpenSearch }) {
   const { theme, toggleTheme } = useTheme();
-
   return (
     <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
       <div className="sidebar-header flex justify-between items-center">
         {/* Logo — hidden when sidebar is collapsed on desktop */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden', flex: 1, minWidth: 0 }}>
           <div className="logo-icon" style={{ flexShrink: 0 }}>
-            <img src="/logo.png" alt="DevToolkit Logo" style={{ width: '26px', height: '26px', objectFit: 'contain', borderRadius: '4px' }} />
+            <img src="/logo.png" alt="DevMint Logo" style={{ width: '26px', height: '26px', objectFit: 'contain', borderRadius: '4px' }} />
           </div>
           <div className="logo-text" style={{ overflow: 'hidden' }}>
-            <h1 style={{color: 'var(--text-primary)'}}>DevToolkit</h1>
+            <h1 style={{color: 'var(--text-primary)'}}>DevMint</h1>
             <span>Pro Utilities</span>
           </div>
         </div>

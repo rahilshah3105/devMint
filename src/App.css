@@ -50,6 +50,8 @@
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
   gap: 0.5rem;
   min-width: 250px;
@@ -142,6 +144,9 @@
 .copy-button,
 .clear-button,
 .run-button-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 6px;

@@ -1,18 +1,51 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import Editor from '@monaco-editor/react';
+import useCollab from '../hooks/useCollab';
 import ResourceLinks from '../components/ResourceLinks';
 import { Play, Trash2 } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 import './ToolPage.css';
 
 export default function JSRunner() {
+  const { theme } = useTheme();
   const [inputCode, setInputCode] = useState('// Write your JS code here\nconsole.log("Hello, DevToolkit!");\n');
   const [logs, setLogs] = useState([]);
+  const [shareLink, setShareLink] = useState('');
+  const params = useParams();
+  const { roomId, remoteCode, createRoom, connect, sendUpdate } = useCollab();
+  const sendTimer = useRef(null);
+  const editorRef = useRef(null);
 
-  const handleEditorShortcut = (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-      event.preventDefault();
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       runCode();
-    }
+    });
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
+      editor.trigger('keyboard', 'editor.action.triggerSuggest', {});
+    });
   };
+
+  useEffect(() => {
+    if (params.id) connect(params.id);
+  }, [params.id, connect]);
+
+  useEffect(() => () => {
+    if (sendTimer.current) {
+      clearTimeout(sendTimer.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (remoteCode !== null && remoteCode !== undefined) {
+      if (remoteCode !== inputCode) setInputCode(remoteCode);
+      setShareLink(`${window.location.origin}/share/${roomId || params.id}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteCode]);
 
   const runCode = () => {
     const logOutput = [];
@@ -20,15 +53,17 @@ export default function JSRunner() {
       log: console.log,
       error: console.error,
       warn: console.warn,
-      info: console.info
+      info: console.info,
+      debug: console.debug
     };
-
-    const lines = inputCode.split('\n');
-    const totalLines = lines.length;
 
     console.log = (...args) => {
       logOutput.push({ type: 'log', message: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ') });
       originalConsole.log(...args);
+    };
+    console.debug = (...args) => {
+      logOutput.push({ type: 'debug', message: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ') });
+      if (originalConsole.debug) originalConsole.debug(...args);
     };
     console.error = (...args) => {
       logOutput.push({ type: 'error', message: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ') });
@@ -70,6 +105,7 @@ export default function JSRunner() {
       console.error = originalConsole.error;
       console.warn = originalConsole.warn;
       console.info = originalConsole.info;
+      console.debug = originalConsole.debug;
     }
 
     setLogs(logOutput);
@@ -90,11 +126,19 @@ export default function JSRunner() {
         <div>
           <h2>JavaScript Runner (Browser)</h2>
           <p>Runs JavaScript directly in your browser context. Use Remote Runner for JavaScript (Node.js) execution.</p>
-          <p className="text-xs text-[var(--text-muted)] mt-2">Shortcut: Ctrl/Cmd + Enter to run code</p>
+          <p className="text-xs text-[var(--text-muted)] mt-2">Shortcut: Ctrl/Cmd + Enter to run code. Monaco suggestions and tab indentation are enabled.</p>
         </div>
         <div className="flex gap-2">
           <button className="secondary-button flex items-center gap-2" onClick={clearLogs}>
             <Trash2 size={16} /> Clear Output
+          </button>
+          <button className="secondary-button flex items-center gap-2" onClick={() => {
+            const id = createRoom();
+            setShareLink(`${window.location.origin}/share/${id}`);
+            // send initial code after small delay to ensure WS connected
+            setTimeout(() => sendUpdate(inputCode), 300);
+          }}>
+            Share
           </button>
           <button className="primary-button !flex !items-center gap-2" onClick={runCode}>
             <Play size={16} fill="currentColor" /> Run Code
@@ -105,17 +149,55 @@ export default function JSRunner() {
       <div className="split-view">
         <div className="split-panel glass-panel">
           <div className="panel-header">JS Code</div>
-          <textarea
-            className="code-textarea custom-scrollbar"
-            value={inputCode}
-            onChange={(e) => setInputCode(e.target.value)}
-            onKeyDown={handleEditorShortcut}
-            spellCheck="false"
-          />
+          <div className="flex-1 min-h-0">
+            <Editor
+              height="100%"
+              defaultLanguage="javascript"
+              language="javascript"
+              theme={theme === 'dark' ? 'vs-dark' : 'light'}
+              value={inputCode}
+              onChange={(value) => {
+                const nextCode = value || '';
+                setInputCode(nextCode);
+                if (roomId) {
+                  if (sendTimer.current) clearTimeout(sendTimer.current);
+                  sendTimer.current = setTimeout(() => sendUpdate(nextCode), 300);
+                }
+              }}
+              onMount={handleEditorDidMount}
+              options={{
+                automaticLayout: true,
+                fontFamily: 'var(--font-mono)',
+                fontSize: 14,
+                minimap: { enabled: false },
+                padding: { top: 16 },
+                scrollBeyondLastLine: false,
+                smoothScrolling: true,
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: 'on',
+                fixedOverflowWidgets: false,
+                formatOnPaste: true,
+                tabSize: 2,
+                insertSpaces: true,
+                quickSuggestions: true,
+                suggestOnTriggerCharacters: true,
+                acceptSuggestionOnEnter: 'on',
+                parameterHints: { enabled: true },
+                wordWrap: 'on',
+                bracketPairColorization: { enabled: true },
+                guides: { bracketPairs: true },
+              }}
+            />
+          </div>
         </div>
         <div className="split-panel glass-panel bg-[#0a0a0b]">
           <div className="panel-header text-[var(--accent-primary)] border-b border-[rgba(59,130,246,0.2)]">Console Output</div>
           <div className="flex-1 overflow-y-auto p-4 custom-scrollbar font-mono text-sm">
+            {shareLink && (
+              <div className="mb-2 text-sm text-[var(--text-muted)]">
+                Share link: <a className="underline" href={shareLink} target="_blank" rel="noreferrer">{shareLink}</a>
+              </div>
+            )}
             {logs.length === 0 ? (
               <div className="text-[var(--text-muted)] italic">Output will appear here...</div>
             ) : (
@@ -127,6 +209,7 @@ export default function JSRunner() {
                     log.type === 'warn' ? 'text-yellow-400' : 
                     log.type === 'success' ? 'text-green-400' : 
                     log.type === 'info' ? 'text-blue-400' : 
+                    log.type === 'debug' ? 'text-purple-400' : 
                     'text-gray-300'
                   }`}
                 >

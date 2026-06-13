@@ -81,7 +81,7 @@ export default function CodeFormatter() {
             cursorBlinking: 'smooth',
             cursorSmoothCaretAnimation: 'on',
             formatOnPaste: true,
-            fixedOverflowWidgets: true,
+            fixedOverflowWidgets: false,
           }}
         />
       </div>

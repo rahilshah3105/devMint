@@ -51,7 +51,7 @@ export default function DiffChecker() {
                 fontFamily: 'var(--font-mono)',
                 padding: { top: 16 },
                 scrollBeyondLastLine: false,
-                fixedOverflowWidgets: true,
+                fixedOverflowWidgets: false,
               }}
             />
           </div>
@@ -70,7 +70,7 @@ export default function DiffChecker() {
                 fontFamily: 'var(--font-mono)',
                 padding: { top: 16 },
                 scrollBeyondLastLine: false,
-                fixedOverflowWidgets: true,
+                fixedOverflowWidgets: false,
               }}
             />
           </div>
@@ -91,7 +91,7 @@ export default function DiffChecker() {
               fontFamily: 'var(--font-mono)',
               padding: { top: 16 },
               scrollBeyondLastLine: false,
-              fixedOverflowWidgets: true,
+              fixedOverflowWidgets: false,
             }}
           />
         </div>
