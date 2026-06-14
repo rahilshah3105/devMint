@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://code-line-formatter.vercel.app/sitemap.xml
+Sitemap: https://devmint-tools.vercel.app/sitemap.xml
