@@ -1,95 +1,87 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-function loadAdSenseScript(client) {
-  if (!client || typeof document === 'undefined') {
-    return;
-  }
-
-  // Prevent loading the script multiple times
-  const existingScript = document.querySelector('script[data-devmint-adsense="true"]');
-  if (existingScript) {
-    return;
-  }
-
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
-  script.setAttribute('data-ad-client', client);
-  script.setAttribute('data-devmint-adsense', 'true');
-  document.head.appendChild(script);
-}
-
-export default function AdBanner({ client, slot, mode = 'dark', className = '', ariaLabel = 'Advertisement', minHeight = '90px' }) {
-  const adRef = useRef(null);
+export default function AdBanner({ className = '', minHeight = '90px' }) {
+  const containerRef = useRef(null);
+  const [width, setWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
   useEffect(() => {
-    // Only push ads if keys are valid and present
-    const isPlaceholder = !client || !slot || client.includes('YOUR_PUBLISHER_ID') || slot === '1234567890' || slot === '0987654321';
-    if (isPlaceholder || typeof window === 'undefined') {
-      return;
-    }
+    if (typeof window === 'undefined') return;
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-    loadAdSenseScript(client);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !containerRef.current) return;
+
+    // Clear any previous ad content
+    containerRef.current.innerHTML = '';
+
+    // Determine key and dimensions based on screen size
+    let key = '';
+    let adWidth = 728;
+    let adHeight = 90;
+
+    if (width >= 768) {
+      // 728x90 Banner
+      key = import.meta.env.VITE_AD_KEY_728X90 || 'b7448932daadc82643ab82d3b55e27f5';
+      adWidth = 728;
+      adHeight = 90;
+    } else {
+      // 320x50 Banner
+      key = import.meta.env.VITE_AD_KEY_320X50 || 'c1549e28b70406de13d05a8029040f7d';
+      adWidth = 320;
+      adHeight = 50;
+    }
 
     try {
-      window.adsbygoogle = window.adsbygoogle || [];
-      window.adsbygoogle.push({});
-    } catch {
-      // Ad scripts can fail silently in dev or without a valid network connection.
+      const iframe = document.createElement('iframe');
+      iframe.width = adWidth;
+      iframe.height = adHeight;
+      iframe.frameBorder = '0';
+      iframe.scrolling = 'no';
+      iframe.style.border = 'none';
+      iframe.style.overflow = 'hidden';
+
+      containerRef.current.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(`
+        <html>
+          <body style="margin:0;padding:0;">
+            <script type="text/javascript">
+              var atOptions = {
+                'key' : '${key}',
+                'format' : 'iframe',
+                'height' : ${adHeight},
+                'width' : ${adWidth},
+                'params' : {}
+              };
+              document.write('<scr' + 'ipt type="text/javascript" src="https://www.highperformanceformat.com/${key}/invoke.js"></scr' + 'ipt>');
+            </script>
+          </body>
+        </html>
+      `);
+      iframeDoc.close();
+    } catch (err) {
+      console.error('Error loading ad script:', err);
     }
-  }, [client, slot]);
+  }, [width]);
 
-  const isPlaceholder = !client || !slot || client.includes('YOUR_PUBLISHER_ID') || slot === '1234567890' || slot === '0987654321';
-
-  // Fallback / Placeholder when environment variables are missing or default
-  if (isPlaceholder) {
-    return (
-      <div
-        className={`ad-banner ad-banner--placeholder ${className}`.trim()}
-        role="note"
-        aria-label={ariaLabel}
-        style={{
-          border: `1px dashed ${mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'}`,
-          borderRadius: '12px',
-          padding: '16px',
-          minHeight,
-          background: mode === 'dark' ? 'rgba(24, 24, 27, 0.5)' : 'rgba(255, 255, 255, 0.6)',
-          color: 'var(--text-secondary)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          width: '100%',
-          maxWidth: '1200px',
-          margin: '0 auto',
-          fontSize: '0.85rem',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-        }}
-      >
-        <span style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-          Advertisement Space
-        </span>
-        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-          Live ads will appear here once VITE_ADSENSE_CLIENT_ID and slot IDs are configured.
-        </span>
-      </div>
-    );
-  }
-
-  // Live Google Ad
   return (
-    <div className={`ad-banner ${className}`.trim()} aria-label={ariaLabel} style={{ minHeight, width: '100%', margin: '0 auto' }}>
-      <ins
-        ref={adRef}
-        className="adsbygoogle"
-        style={{ display: 'block', minHeight, width: '100%' }}
-        data-ad-client={client}
-        data-ad-slot={slot}
-        data-ad-format="horizontal"
-        data-full-width-responsive="true"
-      />
+    <div 
+      className={`ad-banner ${className}`.trim()} 
+      style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        width: '100%', 
+        minHeight,
+        margin: '1rem auto' 
+      }}
+    >
+      <div ref={containerRef} style={{ display: 'flex', justifyContent: 'center', width: '100%' }} />
     </div>
   );
 }
