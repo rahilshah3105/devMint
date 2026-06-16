@@ -394,3 +394,26 @@
   background: rgba(251, 191, 36, 0.45);
   box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.65);
 }
+
+@media (max-width: 768px) {
+  .tool-page {
+    padding: 16px;
+    gap: 16px;
+  }
+  .tool-header h2 {
+    font-size: 1.25rem;
+  }
+  .tool-header p {
+    font-size: 0.85rem;
+  }
+  .tool-header .flex {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .tool-header .flex > * {
+    flex: 1 1 auto;
+    width: 100%;
+    justify-content: center;
+  }
+}

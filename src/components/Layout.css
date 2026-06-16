@@ -209,3 +209,19 @@
   color: var(--accent-primary);
   transform: translateY(-1px);
 }
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  .footer-right {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-section {
+    padding: 16px;
+  }
+}

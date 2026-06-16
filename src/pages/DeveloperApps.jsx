@@ -1,14 +1,7 @@
-import { ExternalLink, ClipboardList, Type, KeyRound, Newspaper, Code, Users } from 'lucide-react';
+import { ExternalLink, ClipboardList, Type, KeyRound, Newspaper, Code, Users, Chrome } from 'lucide-react';
 import './ToolPage.css';
 
 const APPS = [
-  {
-    title: 'Code Formatter',
-    description: 'Format your code snippets with a simple interface supporting multiple languages and themes.',
-    url: 'https://devmint-tools.vercel.app/',
-    tag: 'Developer',
-    icon: <Code size={22} className="text-purple-400" />
-  },
   {
     title: 'Instagram Analyzer',
     description: 'Analyze your Instagram connections, unfollowers, requests, and profile interactions.',
@@ -43,6 +36,13 @@ const APPS = [
     url: 'https://getyournewspulse.netlify.app/',
     tag: 'Information',
     icon: <Newspaper size={22} className="text-amber-400" />
+  },
+  {
+    title: 'Chrome Extension',
+    description: 'Access all your favorite developer, social, and security utilities instantly from your browser toolbar.',
+    url: 'https://github.com/rahilshah3105',
+    tag: 'Extension',
+    icon: <Chrome size={22} className="text-orange-400" />
   },
 ];
 
