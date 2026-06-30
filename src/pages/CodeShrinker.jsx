@@ -27,7 +27,7 @@ export default function CodeShrinker() {
       try {
         const converted = JSON.parse('"' + value + '"');
         setOutputCode(converted);
-      } catch (e) {
+      } catch {
         let converted = value
           .replace(/\\n/g, '\n')
           .replace(/\\r/g, '\r')
@@ -70,7 +70,7 @@ export default function CodeShrinker() {
         <button className="primary-button" onClick={copyToClipboard}>Copy Output</button>
       </header>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-2">
         <div className="tabs">
           <button 
             className={`tab-btn ${tab === 'add' ? 'active' : ''}`}
@@ -86,10 +86,10 @@ export default function CodeShrinker() {
           </button>
         </div>
         {tab === 'add' && (
-          <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)] cursor-pointer hover:text-[var(--text-primary)] transition-colors">
+          <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)] cursor-pointer hover:text-[var(--text-primary)] transition-colors shrink-0">
             <input 
               type="checkbox" 
-              className="accent-[var(--accent-primary)] cursor-pointer"
+              className="accent-[var(--accent-primary)] cursor-pointer shrink-0"
               checked={removeIndentation}
               onChange={handleCheckboxChange}
             />

@@ -63,7 +63,7 @@ export default function CodeFormatter() {
         </div>
       </header>
 
-      <div className="flex-1 glass-panel rounded-xl overflow-hidden min-h-[400px]">
+      <div className="monaco-editor-wrapper glass-panel rounded-xl">
         <Editor
           height="100%"
           defaultLanguage="javascript"
@@ -82,6 +82,9 @@ export default function CodeFormatter() {
             cursorSmoothCaretAnimation: 'on',
             formatOnPaste: true,
             fixedOverflowWidgets: false,
+            scrollbar: {
+              alwaysConsumeMouseWheel: false
+            }
           }}
         />
       </div>

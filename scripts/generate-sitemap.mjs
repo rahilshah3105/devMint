@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const NORMALIZED_SITE_URL = SITE_URL.replace(/\/$/, '');
 
 const TOP_PRIORITY_PATHS = new Set(['/formatter']);
-const MEDIUM_PRIORITY_PATHS = new Set(['/editor', '/diff', '/shrinker', '/json-types', '/json-toolkit', '/regex']);
+const MEDIUM_PRIORITY_PATHS = new Set(['/editor', '/diff', '/shrinker', '/json-types', '/json-toolkit', '/regex', '/share']);
 
 function normalizePath(routePath) {
   if (routePath === '/') {

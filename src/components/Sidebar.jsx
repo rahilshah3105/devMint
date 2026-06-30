@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { 
   Code2, 
   FileJson, 
@@ -26,9 +27,13 @@ import {
   Menu,
   Search,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  Share2,
+  ChevronDown,
+  Info
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { SEO_BY_PATH } from '../utils/seo';
 import './Sidebar.css';
 
 const navGroups = [
@@ -39,6 +44,7 @@ const navGroups = [
       { name: "Multi-Lang Editor", path: "/editor", icon: <Code2 size={18} /> },
       { name: "Diff Checker", path: "/diff", icon: <GitCompare size={18} /> },
       { name: "Code Shrinker \\n", path: "/shrinker", icon: <FileJson size={18} /> },
+      { name: "Code & Note Share", path: "/share", icon: <Share2 size={18} /> },
     ]
   },
   {
@@ -87,7 +93,50 @@ const navGroups = [
 ];
 
 export default function Sidebar({ isOpen, setIsOpen, onOpenSearch }) {
+  const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+
+  const [collapsedGroups, setCollapsedGroups] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sidebar_collapsed_groups');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const toggleGroup = (title) => {
+    setCollapsedGroups(prev => {
+      const next = { ...prev, [title]: !prev[title] };
+      try {
+        localStorage.setItem('sidebar_collapsed_groups', JSON.stringify(next));
+      } catch (e) {
+        console.warn('LocalStorage error:', e);
+      }
+      return next;
+    });
+  };
+
+  // Auto-expand group of the active route
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const activeGroup = navGroups.find(g => g.items.some(item => item.path === currentPath));
+    if (activeGroup && collapsedGroups[activeGroup.title]) {
+      const timer = setTimeout(() => {
+        setCollapsedGroups(prev => {
+          const next = { ...prev, [activeGroup.title]: false };
+          try {
+            localStorage.setItem('sidebar_collapsed_groups', JSON.stringify(next));
+          } catch (error) {
+            console.error('Failed to save collapsed groups', error);
+          }
+          return next;
+        });
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname, collapsedGroups]);
+
   return (
     <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
       <div className="sidebar-header flex justify-between items-center">
@@ -129,28 +178,61 @@ export default function Sidebar({ isOpen, setIsOpen, onOpenSearch }) {
           </button>
         </div>
 
-        {navGroups.map((group, idx) => (
-          <div key={idx} className="nav-group">
-            <h3 className="nav-group-title">{group.title}</h3>
-            <ul className="nav-list">
-              {group.items.map((item, itemIdx) => (
-                <li key={itemIdx}>
-                  <NavLink 
-                    to={item.path} 
-                    className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) setIsOpen(false);
-                    }}
-                    title={!isOpen ? item.name : undefined}
-                  >
-                    <span className="nav-icon">{item.icon}</span>
-                    <span className="nav-name">{item.name}</span>
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        {navGroups.map((group, idx) => {
+          const isCollapsed = !!collapsedGroups[group.title];
+          return (
+            <div key={idx} className="nav-group">
+              <h3 
+                className="nav-group-title flex items-center justify-between cursor-pointer select-none" 
+                onClick={() => toggleGroup(group.title)}
+              >
+                <span>{group.title}</span>
+                {isOpen && (
+                  <span className={`chevron-icon ${isCollapsed ? 'collapsed' : ''}`}>
+                    <ChevronDown size={12} />
+                  </span>
+                )}
+              </h3>
+              {!isCollapsed && (
+                <ul className="nav-list">
+                  {group.items.map((item, itemIdx) => (
+                    <li key={itemIdx} className="nav-item-relative">
+                      <NavLink 
+                        to={item.path} 
+                        className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                        onClick={() => {
+                          if (window.innerWidth < 768) setIsOpen(false);
+                        }}
+                        title={!isOpen ? item.name : undefined}
+                      >
+                        <span className="nav-icon">{item.icon}</span>
+                        <span className="nav-name">{item.name}</span>
+                      </NavLink>
+                      {isOpen && (
+                        <div className="nav-info-tooltip-wrapper">
+                          <button 
+                            className="nav-info-btn"
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            aria-label={`${item.name} info`}
+                          >
+                            <Info size={14} />
+                          </button>
+                          <div className="nav-info-tooltip">
+                            {SEO_BY_PATH[item.path]?.description || "Developer tool for utility workflows."}
+                          </div>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
       </nav>
       
       <div className="sidebar-footer flex justify-between items-center px-6 py-4 border-t border-[rgba(128,128,128,0.1)]">

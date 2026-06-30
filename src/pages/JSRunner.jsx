@@ -149,7 +149,7 @@ export default function JSRunner() {
       <div className="split-view">
         <div className="split-panel glass-panel">
           <div className="panel-header">JS Code</div>
-          <div className="flex-1 min-h-0">
+          <div className="monaco-editor-wrapper">
             <Editor
               height="100%"
               defaultLanguage="javascript"
@@ -186,6 +186,9 @@ export default function JSRunner() {
                 wordWrap: 'on',
                 bracketPairColorization: { enabled: true },
                 guides: { bracketPairs: true },
+                scrollbar: {
+                  alwaysConsumeMouseWheel: false
+                }
               }}
             />
           </div>

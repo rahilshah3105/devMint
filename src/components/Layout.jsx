@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Sidebar from './Sidebar';
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { Menu, Search } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import AdBanner from './AdBanner';
+import { SEO_BY_PATH } from '../utils/seo';
 import './Layout.css';
 
 const FEATURE_SEARCH_ITEMS = [
@@ -11,6 +12,7 @@ const FEATURE_SEARCH_ITEMS = [
   { name: 'Multi-Lang Editor', path: '/editor', group: 'Editors & Formatters' },
   { name: 'Diff Checker', path: '/diff', group: 'Editors & Formatters' },
   { name: 'Code Shrinker', path: '/shrinker', group: 'Editors & Formatters' },
+  { name: 'Code & Note Share', path: '/share', group: 'Editors & Formatters', keywords: ['share text', 'share code', 'pastebin', 'collaborate', 'collaboration', 'notes share'] },
   { name: 'JSON to Types', path: '/json-types', group: 'Converters & Encoders' },
   {
     name: 'JSON Toolkit',
@@ -194,18 +196,18 @@ export default function Layout() {
       .map((entry) => entry.item);
   }, [searchText]);
 
-  const closeSearch = () => {
+  const closeSearch = useCallback(() => {
     setSearchOpen(false);
     setSearchText('');
     setActiveIndex(0);
-  };
+  }, []);
 
   const openSearch = () => setSearchOpen(true);
 
-  const goToFeature = (path) => {
+  const goToFeature = useCallback((path) => {
     navigate(path);
     closeSearch();
-  };
+  }, [navigate, closeSearch]);
 
   // Auto-collapse sidebar on smaller screens
   useEffect(() => {
@@ -258,7 +260,7 @@ export default function Layout() {
     // Capture phase helps when child widgets (like Monaco) swallow keyboard events.
     document.addEventListener('keydown', onKeyDown, true);
     return () => document.removeEventListener('keydown', onKeyDown, true);
-  }, [searchOpen]);
+  }, [searchOpen, closeSearch]);
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -266,12 +268,16 @@ export default function Layout() {
   }, [searchOpen]);
 
   useEffect(() => {
-    setActiveIndex(0);
+    const timer = setTimeout(() => setActiveIndex(0), 0);
+    return () => clearTimeout(timer);
   }, [searchText]);
 
   useEffect(() => {
-    if (searchOpen) closeSearch();
-  }, [location.pathname]);
+    if (searchOpen) {
+      const timer = setTimeout(() => closeSearch(), 0);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname, searchOpen, closeSearch]);
 
   const handleSearchInputKeyDown = (event) => {
     if (!filteredFeatures.length) return;
@@ -321,8 +327,13 @@ export default function Layout() {
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => goToFeature(item.path)}
                 >
-                  <span>{item.name}</span>
-                  <small>{item.group}</small>
+                  <div className="feature-search-item-info">
+                    <span className="feature-search-item-name">{item.name}</span>
+                    <span className="feature-search-item-desc">
+                      {SEO_BY_PATH[item.path]?.description || "Access utility tools and resources."}
+                    </span>
+                  </div>
+                  <small className="feature-search-item-group">{item.group}</small>
                 </button>
               ))}
             </div>
@@ -345,7 +356,7 @@ export default function Layout() {
         )}
 
         {/* Top Ad Slot */}
-        <div style={{ padding: '24px 32px 0 32px', width: '100%' }}>
+        <div className="w-full px-4 md:px-8 pt-6 pb-0 box-border overflow-hidden">
           <AdBanner
             client={import.meta.env.VITE_ADSENSE_CLIENT_ID}
             slot={import.meta.env.VITE_ADSENSE_TOP_SLOT}
@@ -359,7 +370,7 @@ export default function Layout() {
         </div>
 
         {/* Bottom Ad Slot */}
-        <div style={{ padding: '0 32px 24px 32px', width: '100%', marginTop: 'auto' }}>
+        <div className="w-full px-4 md:px-8 pt-0 pb-6 mt-auto box-border overflow-hidden">
           <AdBanner
             client={import.meta.env.VITE_ADSENSE_CLIENT_ID}
             slot={import.meta.env.VITE_ADSENSE_BOTTOM_SLOT}

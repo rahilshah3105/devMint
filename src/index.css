@@ -149,6 +149,7 @@ input[type="checkbox"] {
   place-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0; /* Prevent checkbox from shrinking on mobile/squeezed rows */
 }
 
 input[type="checkbox"]::before {
@@ -204,7 +205,39 @@ input[type="checkbox"]:hover {
   background-color: rgba(0, 0, 0, 0.4);
 }
 
-.custom-input:read-only {
+/* Custom Textarea Field Utilities */
+.custom-textarea {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-light);
+  border-radius: 8px;
+  padding: 12px 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  width: 100%;
+  resize: vertical;
+  min-height: 100px;
+}
+
+[data-theme='dark'] .custom-textarea {
+  background-color: rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.custom-textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme='dark'] .custom-textarea:focus {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.custom-input:read-only,
+.custom-textarea:read-only {
   opacity: 0.85;
   background-color: rgba(0, 0, 0, 0.02);
 }

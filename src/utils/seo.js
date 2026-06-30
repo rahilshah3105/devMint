@@ -32,6 +32,11 @@ export const SEO_BY_PATH = {
     description:
       'Shrink and compact code output for easier sharing and reduced payload size in development workflows.'
   },
+  '/share': {
+    title: 'Code & Note Share Online | DevMint',
+    description:
+      'Share code, text, or notes with anyone in real-time. Create shared workspaces and collaborate with multiple notebooks instantly.'
+  },
   '/json-types': {
     title: 'JSON to Types Converter | DevMint',
     description:

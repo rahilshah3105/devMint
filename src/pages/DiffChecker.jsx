@@ -36,7 +36,7 @@ export default function DiffChecker() {
 
       <div className="flex-1 glass-panel rounded-xl overflow-hidden min-h-[400px] flex flex-col">
         <div className="flex flex-1 min-h-[300px] gap-2">
-          <div className="flex-1 flex flex-col">
+          <div className="monaco-editor-wrapper flex flex-col">
             <div className="text-xs font-semibold text-[var(--text-secondary)] mb-1 pl-1">Original</div>
             <Editor
               height="100%"
@@ -52,10 +52,13 @@ export default function DiffChecker() {
                 padding: { top: 16 },
                 scrollBeyondLastLine: false,
                 fixedOverflowWidgets: false,
+                scrollbar: {
+                  alwaysConsumeMouseWheel: false
+                }
               }}
             />
           </div>
-          <div className="flex-1 flex flex-col">
+          <div className="monaco-editor-wrapper flex flex-col">
             <div className="text-xs font-semibold text-[var(--text-secondary)] mb-1 pl-1">Modified</div>
             <Editor
               height="100%"
@@ -71,6 +74,9 @@ export default function DiffChecker() {
                 padding: { top: 16 },
                 scrollBeyondLastLine: false,
                 fixedOverflowWidgets: false,
+                scrollbar: {
+                  alwaysConsumeMouseWheel: false
+                }
               }}
             />
           </div>
@@ -92,6 +98,9 @@ export default function DiffChecker() {
               padding: { top: 16 },
               scrollBeyondLastLine: false,
               fixedOverflowWidgets: false,
+              scrollbar: {
+                alwaysConsumeMouseWheel: false
+              }
             }}
           />
         </div>

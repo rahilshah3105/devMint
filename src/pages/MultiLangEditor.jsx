@@ -31,7 +31,7 @@ export default function MultiLangEditor() {
         </div>
       </header>
 
-      <div className="flex-1 glass-panel rounded-xl overflow-hidden min-h-[400px]">
+      <div className="monaco-editor-wrapper glass-panel rounded-xl">
         <Editor
           height="100%"
           language={language}
@@ -47,6 +47,9 @@ export default function MultiLangEditor() {
             smoothScrolling: true,
             cursorBlinking: 'smooth',
             fixedOverflowWidgets: false,
+            scrollbar: {
+              alwaysConsumeMouseWheel: false
+            }
           }}
         />
       </div>

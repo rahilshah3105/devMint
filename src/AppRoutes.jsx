@@ -17,6 +17,7 @@ import UrlConverter from './pages/UrlConverter';
 import JwtDecoder from './pages/JwtDecoder';
 
 import JSRunner from './pages/JSRunner';
+import CodeShare from './pages/CodeShare';
 import RegexTester from './pages/RegexTester';
 import HashGenerator from './pages/HashGenerator';
 import RemoteRunner from './pages/RemoteRunner';
@@ -110,7 +111,8 @@ export default function AppRoutes() {
           {/* Utilities */}
           <Route path="remote-runner" element={<RemoteRunner />} />
           <Route path="js-runner" element={<JSRunner />} />
-          <Route path="share/:id" element={<JSRunner />} />
+          <Route path="share" element={<CodeShare />} />
+          <Route path="share/:id" element={<CodeShare />} />
           <Route path="regex" element={<RegexTester />} />
           <Route path="hash" element={<HashGenerator />} />
           <Route path="uuid" element={<UuidGenerator />} />

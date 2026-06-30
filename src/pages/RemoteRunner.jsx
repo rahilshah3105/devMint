@@ -123,7 +123,7 @@ export default function RemoteRunner() {
 
         setOutput(outText.trim() || 'Program executed successfully with no output.');
       }
-    } catch (e) {
+    } catch {
       setErrorMsg('Network error: Could not reach execution server.');
       setOutput('');
     } finally {
@@ -203,7 +203,7 @@ export default function RemoteRunner() {
               {copied ? 'Copied!' : 'Copy'}
             </button>
           </div>
-          <div className="flex-1 py-2">
+          <div className="monaco-editor-wrapper py-2">
             <Editor
               height="100%"
               language={language.id === 'c' || language.id === 'cpp' ? 'cpp' : language.id}
@@ -221,6 +221,9 @@ export default function RemoteRunner() {
                 cursorBlinking: 'smooth',
                 renderLineHighlight: 'all',
                 fixedOverflowWidgets: false,
+                scrollbar: {
+                  alwaysConsumeMouseWheel: false
+                }
               }}
             />
           </div>

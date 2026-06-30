@@ -8,22 +8,7 @@ import './ToolPage.css';
 const TONE_OPTIONS = ['Professional', 'Friendly', 'Concise', 'Detailed', 'Analytical'];
 const FORMAT_OPTIONS = ['Bullets', 'Step-by-step', 'JSON', 'Markdown', 'Plain text'];
 
-const fieldStyle = {
-  width: '100%',
-  padding: '10px 12px',
-  borderRadius: 8,
-  border: '1px solid var(--border-light)',
-  backgroundColor: 'rgba(128, 128, 128, 0.08)',
-  color: 'var(--text-primary)',
-  outline: 'none',
-};
 
-const labelStyle = {
-  display: 'block',
-  fontSize: '0.875rem',
-  marginBottom: 8,
-  color: 'var(--text-secondary)',
-};
 
 function normalizeList(value) {
   return value
@@ -147,13 +132,13 @@ export default function ImprovePrompts() {
           <h2>Improve Prompts</h2>
           <p>Turn rough prompts into clear, structured, and high-quality prompts for better AI responses.</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="secondary-button" onClick={resetDefaults}>
-            <RefreshCw size={14} style={{ marginRight: 6 }} />
+        <div className="flex gap-2">
+          <button className="secondary-button flex items-center gap-1.5" onClick={resetDefaults}>
+            <RefreshCw size={14} />
             Reset
           </button>
-          <button className="primary-button" onClick={copyOutput}>
-            <Copy size={14} style={{ marginRight: 6 }} />
+          <button className="primary-button flex items-center gap-1.5" onClick={copyOutput}>
+            <Copy size={14} />
             {copied ? 'Copied' : 'Copy Improved Prompt'}
           </button>
         </div>
@@ -166,38 +151,37 @@ export default function ImprovePrompts() {
             <div>
               <label className="block text-sm mb-2 text-[var(--text-secondary)]">Original Prompt</label>
               <textarea
-                className="code-textarea"
-                style={{ minHeight: 130, border: '1px solid var(--border-light)', borderRadius: 8 }}
+                className="custom-textarea min-h-[130px]"
                 value={userPrompt}
                 onChange={(e) => setUserPrompt(e.target.value)}
                 placeholder="Paste your raw prompt here..."
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div style={{marginRight: '10px'}}>
-                <label style={labelStyle}>Goal</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm mb-2 text-[var(--text-secondary)]">Goal</label>
                 <input
+                  className="custom-input"
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
-                  style={fieldStyle}
                   placeholder="What should the model achieve?"
                 />
               </div>
               <div>
-                <label style={labelStyle}>Audience</label>
+                <label className="block text-sm mb-2 text-[var(--text-secondary)]">Audience</label>
                 <input
+                  className="custom-input"
                   value={audience}
                   onChange={(e) => setAudience(e.target.value)}
-                  style={fieldStyle}
                   placeholder="Who is this for?"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div style={{marginRight: '10px'}}>
-                <label style={labelStyle}>Tone</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm mb-2 text-[var(--text-secondary)]">Tone</label>
                 <CustomSelect
                   className="full-width"
                   value={tone}
@@ -206,7 +190,7 @@ export default function ImprovePrompts() {
                 />
               </div>
               <div>
-                <label style={labelStyle}>Output Format</label>
+                <label className="block text-sm mb-2 text-[var(--text-secondary)]">Output Format</label>
                 <CustomSelect
                   className="full-width"
                   value={format}
@@ -219,8 +203,7 @@ export default function ImprovePrompts() {
             <div>
               <label className="block text-sm mb-2 text-[var(--text-secondary)]">Context (one per line)</label>
               <textarea
-                className="code-textarea"
-                style={{ minHeight: 100, border: '1px solid var(--border-light)', borderRadius: 8 }}
+                className="custom-textarea min-h-[100px]"
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 placeholder="Project context, tech stack, constraints..."
@@ -230,8 +213,7 @@ export default function ImprovePrompts() {
             <div>
               <label className="block text-sm mb-2 text-[var(--text-secondary)]">Constraints (one per line)</label>
               <textarea
-                className="code-textarea"
-                style={{ minHeight: 100, border: '1px solid var(--border-light)', borderRadius: 8 }}
+                className="custom-textarea min-h-[100px]"
                 value={constraints}
                 onChange={(e) => setConstraints(e.target.value)}
                 placeholder="Length limits, style rules, forbidden items..."
@@ -239,17 +221,19 @@ export default function ImprovePrompts() {
             </div>
 
             <div className="flex flex-wrap gap-4 text-sm text-[var(--text-secondary)]">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-pointer shrink-0">
                 <input
                   type="checkbox"
+                  className="shrink-0"
                   checked={includeExamples}
                   onChange={(e) => setIncludeExamples(e.target.checked)}
                 />
                 Include examples
               </label>
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-pointer shrink-0">
                 <input
                   type="checkbox"
+                  className="shrink-0"
                   checked={askClarifyingQuestions}
                   onChange={(e) => setAskClarifyingQuestions(e.target.checked)}
                 />
